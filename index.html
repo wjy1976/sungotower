@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>三國の演義：無限塔防 </title>
+    <title>三國の演義：無限戰役 (完美修復版)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
@@ -16,6 +16,8 @@
             --wei-color: #1565c0;
             --wu-color: #c62828;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -43,7 +45,7 @@
             border: 4px solid var(--panel-color);
             box-shadow: 0 0 30px rgba(0,0,0,0.7);
             display: flex;
-            flex-direction: column; /* Mobile default: Vertical stack */
+            flex-direction: column;
             overflow: hidden;
         }
 
@@ -63,42 +65,30 @@
             color: white;
             transition: opacity 0.3s;
             padding: 20px;
-            box-sizing: border-box;
             text-align: center;
         }
 
-        .hidden {
-            display: none !important;
-            opacity: 0;
-            pointer-events: none;
-        }
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
 
         /* Menu Styles */
-        .faction-select { 
-            display: flex; 
-            gap: 20px; 
-            margin-top: 40px; 
-            flex-wrap: wrap; 
-            justify-content: center;
-            overflow-y: auto;
-            max-height: 60vh;
-        }
+        .faction-select { display: flex; gap: 20px; margin-top: 40px; flex-wrap: wrap; justify-content: center; overflow-y: auto; max-height: 60vh; width: 100%; }
         .faction-card {
             width: 200px; height: 320px; border: 4px solid #555; border-radius: 8px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.1);
-            flex-shrink: 0;
+            cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.1); flex-shrink: 0;
         }
         .faction-card:active, .faction-card:hover { transform: translateY(-5px); box-shadow: 0 0 20px rgba(255,215,0,0.3); }
         .faction-shu { border-color: var(--shu-color); }
+        .faction-shu:hover { background: linear-gradient(to bottom, rgba(46,125,50,0.2), transparent); }
         .faction-wei { border-color: var(--wei-color); }
+        .faction-wei:hover { background: linear-gradient(to bottom, rgba(21,101,192,0.2), transparent); }
         .faction-wu { border-color: var(--wu-color); }
-        
+        .faction-wu:hover { background: linear-gradient(to bottom, rgba(198,40,40,0.2), transparent); }
         .faction-symbol { font-size: 80px; margin-bottom: 20px; }
         .faction-name { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
         .faction-desc { font-size: 14px; text-align: center; padding: 0 15px; color: #ccc; line-height: 1.5; }
 
-        /* Level Complete & Game Over */
+        /* Level & End Screen */
         #level-screen h2, #end-screen h2 { font-size: 8vw; color: #ffd700; margin-bottom: 10px; }
         #end-screen h2 { color: #ef5350; }
         #level-screen p, #end-screen p { font-size: 18px; color: #eee; margin-bottom: 30px; }
@@ -110,71 +100,78 @@
         }
         .next-btn:active { transform: scale(0.95); }
 
-        /* Game UI Layout */
+        /* Game UI Layout - Responsive Fixes */
+        /* Canvas Container */
+        .canvas-container {
+            flex-grow: 1;
+            position: relative;
+            background-color: #dccbba;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 0; /* Important for flex container */
+        }
+
         #game-canvas { 
-            background-color: #dccbba; 
             cursor: crosshair; 
-            touch-action: none; /* Prevent scrolling on touch */
-            width: 100%;
-            height: auto;
-            flex-shrink: 1; /* Allow shrinking */
+            touch-action: none; 
+            /* Force canvas to fit within container */
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
         }
 
         #ui-sidebar {
-            width: 100%; 
-            background-color: var(--panel-color); 
-            color: var(--text-color);
-            padding: 10px; 
-            display: flex; 
-            flex-direction: column; 
-            border-top: 4px solid #1a100e;
-            box-sizing: border-box; 
-            z-index: 10;
-            overflow-y: auto;
-            flex-shrink: 0; /* Don't shrink sidebar too much */
-            height: 40vh; /* Mobile height */
+            width: 100%; background-color: var(--panel-color); color: var(--text-color);
+            padding: 10px; display: flex; flex-direction: column; border-top: 4px solid #1a100e;
+            z-index: 10; overflow-y: auto; flex-shrink: 0; height: 45%; min-height: 280px;
         }
 
-        /* Responsive Layout for Desktop/Tablet Landscape */
+        /* Desktop Layout Fixes */
         @media (min-width: 1024px) {
-            #game-wrapper {
-                flex-direction: row;
-                height: 700px; /* Fixed height for desktop look */
+            #game-wrapper { 
+                flex-direction: row; 
+                height: 100%; 
+                max-height: 800px; 
+            }
+            .canvas-container {
+                width: auto;
+                height: 100%;
+                flex-grow: 1; /* Take remaining space */
+                flex-shrink: 1; /* Allow shrinking if needed */
+                min-width: 0; /* Allow flex item to shrink below content size */
             }
             #game-canvas {
-                width: 880px; /* Base width */
-                height: 700px;
-                flex: none;
-            }
-            #ui-sidebar {
-                width: 320px;
+                width: auto;
                 height: 100%;
-                border-top: none;
-                border-left: 4px solid #1a100e;
+            }
+            #ui-sidebar { 
+                width: 320px; 
+                min-width: 320px; /* Force sidebar width */
+                height: 100%; 
+                border-top: none; 
+                border-left: 4px solid #1a100e; 
+                flex-shrink: 0; /* Prevent sidebar from shrinking */
             }
             #level-screen h2, #end-screen h2 { font-size: 40px; }
         }
 
         h1 { margin: 0 0 5px 0; font-size: 20px; text-align: center; border-bottom: 2px solid var(--text-color); padding-bottom: 5px; color: #ffb74d; }
-        .header-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; color: #bdbdbd; }
+        .header-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; color: #bdbdbd; padding: 0 8px; }
         
         .stats-panel {
-            display: flex; justify-content: space-between; margin-bottom: 10px;
-            background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px;
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; /* 3 Equal Columns */
+            gap: 5px; 
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.3); padding: 8px 5px; border-radius: 4px;
         }
         .stat-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; }
-        .stat-value { font-size: 16px; font-weight: bold; color: #ffb74d; margin-top: 2px; }
+        .stat-value { font-size: 16px; font-weight: bold; color: #ffb74d; margin-top: 2px; text-align: center; white-space: nowrap; }
         
-        .tower-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 3 cols on mobile */
-            gap: 6px; 
-            margin-bottom: 10px; 
-        }
-        @media (min-width: 1024px) {
-            .tower-grid { grid-template-columns: 1fr 1fr; } /* 2 cols on desktop sidebar */
-        }
+        .tower-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+        @media (min-width: 1024px) { .tower-grid { grid-template-columns: 1fr 1fr; } }
 
         .tower-btn {
             display: flex; flex-direction: column; align-items: center; background-color: #4e342e;
@@ -189,13 +186,25 @@
         .tower-cost { font-size: 11px; color: #ffcc80; }
         
         #detail-panel {
-            background: rgba(0,0,0,0.3); border: 1px solid #8d6e63; padding: 8px;
-            border-radius: 4px; margin-bottom: 10px; font-size: 12px; min-height: 80px;
-            flex-grow: 1; /* Fill space */
+            background: rgba(0,0,0,0.3); border: 1px solid #8d6e63; padding: 12px;
+            border-radius: 4px; margin-bottom: 10px; font-size: 13px; min-height: 100px;
+            flex-grow: 1;
         }
-        .detail-title { color: #ffb74d; font-weight: bold; font-size: 14px; margin-bottom: 4px; border-bottom: 1px solid #5d4037; padding-bottom: 2px; display: flex; justify-content: space-between; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .detail-desc { margin-top: 4px; color: #e0e0e0; font-style: italic; line-height: 1.3; }
+        .detail-title { 
+            color: #ffb74d; font-weight: bold; font-size: 16px; 
+            margin-bottom: 8px; border-bottom: 1px solid #5d4037; padding-bottom: 4px; 
+            display: flex; justify-content: space-between; 
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 4px 10px;
+            margin-bottom: 8px;
+        }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; }
+        .detail-label { color: #bdbdbd; }
+        .detail-val { color: #fff; font-weight: bold; }
+        .detail-desc { margin-top: 4px; color: #e0e0e0; font-style: italic; line-height: 1.4; font-size: 12px; }
         
         .action-row { display: flex; gap: 5px; margin-top: auto; margin-bottom: 5px; }
         .btn-mini { flex: 1; padding: 10px 0; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; font-family: inherit; font-size: 14px; }
@@ -216,11 +225,25 @@
             border: 1px solid #ffb74d; color: #ffb74d; padding: 5px 15px; cursor: pointer; font-family: inherit; z-index: 200;
         }
         .back-btn:hover { background: rgba(255, 183, 77, 0.2); }
+
+        #sound-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.5); border: 1px solid #ffb74d; color: #ffb74d;
+            width: 40px; height: 40px; border-radius: 50%; font-size: 20px;
+            cursor: pointer; z-index: 200; display: flex; justify-content: center; align-items: center;
+        }
+        #bgm-name {
+            position: absolute; bottom: 10px; right: 10px; color: rgba(255, 255, 255, 0.5);
+            font-size: 12px; font-style: italic; pointer-events: none; z-index: 5;
+        }
     </style>
 </head>
 <body>
 
     <div id="game-wrapper">
+        <button id="sound-btn" onclick="toggleSound()">🔇</button>
+        <div id="bgm-name"></div>
+
         <div id="menu-screen" class="screen">
             <h1 style="font-size: 48px; border: none; margin-bottom: 10px;">三國：群雄割據</h1>
             <p style="color: #bbb; margin-bottom: 40px; font-size: 18px;">選擇陣營 · 無限戰場 · 策略攻防</p>
@@ -228,17 +251,17 @@
                 <div class="faction-card faction-shu" onclick="startGame('shu')">
                     <div class="faction-symbol" style="color: var(--shu-color)">蜀</div>
                     <div class="faction-name">蜀漢</div>
-                    <div class="faction-desc">山道險要<br>武將：五虎上將<br>特性：防守/控制</div>
+                    <div class="faction-desc">山道險要<br>特色：遠程/防守</div>
                 </div>
                 <div class="faction-card faction-wei" onclick="startGame('wei')">
                     <div class="faction-symbol" style="color: var(--wei-color)">魏</div>
                     <div class="faction-name">曹魏</div>
-                    <div class="faction-desc">城池堅固<br>五子良將<br>特性：爆發/範圍</div>
+                    <div class="faction-desc">城池堅固<br>特色：爆發/範圍</div>
                 </div>
                 <div class="faction-card faction-wu" onclick="startGame('wu')">
                     <div class="faction-symbol" style="color: var(--wu-color)">吳</div>
                     <div class="faction-name">東吳</div>
-                    <div class="faction-desc">水寨連環<br>江東虎臣<br>特性：灼燒/攻速</div>
+                    <div class="faction-desc">水寨連環<br>特色：持續/攻速</div>
                 </div>
             </div>
         </div>
@@ -256,7 +279,9 @@
             <button onclick="location.reload()" style="padding: 10px 30px; font-size: 18px; cursor: pointer;">返回標題</button>
         </div>
 
-        <canvas id="game-canvas" width="880" height="700"></canvas>
+        <div class="canvas-container">
+            <canvas id="game-canvas" width="880" height="700"></canvas>
+        </div>
         
         <aside id="ui-sidebar">
             <div class="header-info">
@@ -270,7 +295,11 @@
                 <div class="stat-item"><span>庫銀</span><span id="gold-display" class="stat-value" style="color: #ffd700;">150</span></div>
             </div>
             <div id="tower-grid" class="tower-grid"></div>
-            <div id="detail-panel"><div style="text-align: center; color: #757575; padding-top: 20px;">選擇武將查看詳情</div></div>
+            
+            <div id="detail-panel">
+                <div style="text-align: center; color: #757575; padding-top: 20px;">選擇武將查看詳情</div>
+            </div>
+            
             <div id="action-area" class="action-row hidden">
                 <button id="btn-upgrade" class="btn-mini btn-upg" onclick="actionUpgrade()">晉升 <span id="cost-upg">(100)</span></button>
                 <button id="btn-sell" class="btn-mini btn-sell" onclick="actionSell()">撤退 <span id="cost-sell">(50)</span></button>
@@ -281,49 +310,321 @@
     </div>
 
     <script>
+        // --- PRO Audio System (10 Tracks) ---
+        class SoundManager {
+            constructor() {
+                this.ctx = null;
+                this.muted = true;
+                this.masterGain = null;
+                this.isPlayingBGM = false;
+                this.nextNoteTime = 0;
+                this.beatCount = 0;
+                this.currentTrack = 'ambush'; 
+                
+                this.tracks = {
+                    'ambush': { name: '十面埋伏', tempo: 150, logic: this.bgmAmbush.bind(this) },
+                    'general': { name: '將軍令', tempo: 100, logic: this.bgmGeneral.bind(this) },
+                    'lone': { name: '千里走單騎', tempo: 130, logic: this.bgmLone.bind(this) },
+                    'empty': { name: '空城計', tempo: 70, logic: this.bgmEmpty.bind(this) },
+                    'cliff': { name: '赤壁以此', tempo: 160, logic: this.bgmCliff.bind(this) },
+                    'peach': { name: '桃園結義', tempo: 110, logic: this.bgmPeach.bind(this) },
+                    'march': { name: '中原逐鹿', tempo: 120, logic: this.bgmMarch.bind(this) },
+                    'strategy': { name: '運籌帷幄', tempo: 90, logic: this.bgmStrategy.bind(this) },
+                    'siege': { name: '兵臨城下', tempo: 140, logic: this.bgmSiege.bind(this) },
+                    'dragon': { name: '臥龍升天', tempo: 125, logic: this.bgmDragon.bind(this) }
+                };
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.connect(this.ctx.destination);
+                    this.masterGain.gain.value = 0.8; // Boost volume significantly
+                    this.setupGlobalFX();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                this.muted = false;
+                this.updateBtn();
+                this.startBGM();
+            }
+
+            setupGlobalFX() {
+                this.globalFilter = this.ctx.createBiquadFilter();
+                this.globalFilter.type = 'lowpass';
+                this.globalFilter.frequency.value = 15000;
+                this.masterGain.disconnect();
+                this.masterGain.connect(this.globalFilter);
+                this.globalFilter.connect(this.ctx.destination);
+            }
+
+            toggle() {
+                if (!this.ctx) { this.init(); return; }
+                this.muted = !this.muted;
+                if(this.muted) { this.ctx.suspend(); this.isPlayingBGM = false; }
+                else { this.ctx.resume(); this.startBGM(); }
+                this.updateBtn();
+            }
+
+            updateBtn() { document.getElementById('sound-btn').textContent = this.muted ? '🔇' : '🔊'; }
+
+            selectRandomTrack() {
+                const keys = Object.keys(this.tracks);
+                this.currentTrack = keys[Math.floor(Math.random() * keys.length)];
+                const display = document.getElementById('bgm-name');
+                if (display) {
+                    display.textContent = `♪ ${this.tracks[this.currentTrack].name}`;
+                    display.style.opacity = 1;
+                    setTimeout(() => display.style.opacity = 0, 5000);
+                }
+            }
+
+            startBGM() {
+                if (this.isPlayingBGM) return;
+                this.isPlayingBGM = true;
+                this.nextNoteTime = this.ctx.currentTime + 0.1;
+                this.beatCount = 0;
+                this.scheduler();
+            }
+
+            scheduler() {
+                if (!this.isPlayingBGM || this.muted) return;
+                const lookahead = 25.0;
+                const scheduleAheadTime = 0.1;
+                const track = this.tracks[this.currentTrack];
+
+                while (this.nextNoteTime < this.ctx.currentTime + scheduleAheadTime) {
+                    track.logic(this.beatCount, this.nextNoteTime);
+                    const secondsPerBeat = 60.0 / track.tempo;
+                    this.nextNoteTime += 0.25 * secondsPerBeat; 
+                    this.beatCount++;
+                }
+                setTimeout(() => this.scheduler(), lookahead);
+            }
+
+            bgmAmbush(beat, time) {
+                const barBeat = beat % 16;
+                if (beat % 2 === 0 && Math.random() > 0.3) this.triggerPipa(time, 329.63, 0.1);
+                if (barBeat === 0 || barBeat === 6 || barBeat === 12) {
+                    this.triggerDrum(time, 60, 0.8); this.triggerPipa(time, 293.66, 0.3);
+                }
+            }
+            bgmGeneral(beat, time) {
+                const barBeat = beat % 16;
+                if (barBeat === 0) { this.triggerDrum(time, 50, 1.2); this.triggerGong(time, 0.3); }
+                if (barBeat === 4 || barBeat === 8 || barBeat === 12) this.triggerDrum(time, 80, 0.6);
+            }
+            bgmLone(beat, time) {
+                const barBeat = beat % 12;
+                if (barBeat % 3 === 0) this.triggerDrum(time, 100, 0.6);
+                if (barBeat % 3 === 1) this.triggerDrum(time, 150, 0.3);
+                if (barBeat === 0 && Math.random() > 0.5) {
+                    const scale = [392, 440, 523, 587, 659];
+                    this.triggerFlute(time, scale[Math.floor(Math.random()*scale.length)], 0.4);
+                }
+            }
+            bgmEmpty(beat, time) {
+                if (beat % 32 === 0) this.triggerGong(time, 0.4);
+                if (Math.random() > 0.9) this.triggerPipa(time, [1318, 1567][Math.floor(Math.random()*2)], 0.5, 'sine');
+            }
+            bgmCliff(beat, time) {
+                if (beat % 2 === 0) this.triggerDrum(time, 70, 0.7);
+                if (Math.random() > 0.7) this.triggerNoise(time, 0.1, 0.1);
+            }
+            bgmPeach(beat, time) { 
+                const barBeat = beat % 32;
+                if (barBeat % 8 === 0) this.triggerDrum(time, 100, 0.5);
+                if (barBeat % 2 === 0 && Math.random() > 0.4) {
+                    const scale = [261, 293, 329, 392, 440]; 
+                    this.triggerRetroSynth(time, scale[Math.floor(Math.random()*scale.length)], 0.2, 'triangle');
+                }
+            }
+            bgmMarch(beat, time) { 
+                const barBeat = beat % 16;
+                if (barBeat % 4 === 0) this.triggerDrum(time, 80, 0.8);
+                if (barBeat % 4 === 2) this.triggerClick(time, 0.2);
+                if (Math.random() > 0.3) {
+                    const scale = [392, 440, 523, 587, 659]; 
+                    this.triggerRetroSynth(time, scale[Math.floor(Math.random()*scale.length)], 0.1, 'square');
+                }
+            }
+            bgmStrategy(beat, time) { 
+                const barBeat = beat % 16;
+                if (barBeat === 0) this.triggerRetroSynth(time, 196, 0.8, 'sine');
+                if (barBeat === 8) this.triggerRetroSynth(time, 220, 0.8, 'sine');
+                if (Math.random() > 0.8) this.triggerClick(time, 0.05);
+            }
+            bgmSiege(beat, time) { 
+                const barBeat = beat % 8;
+                if (barBeat === 0 || barBeat === 3 || barBeat === 6) {
+                    this.triggerRetroSynth(time, 98, 0.1, 'sawtooth'); 
+                }
+                if (barBeat % 2 === 0) this.triggerDrum(time, 60, 0.6);
+            }
+            bgmDragon(beat, time) { 
+                const barBeat = beat % 16;
+                if (barBeat % 2 === 0) {
+                    const baseFreq = 261 + (barBeat * 10); 
+                    this.triggerRetroSynth(time, baseFreq, 0.15, 'square');
+                }
+                if (barBeat % 4 === 0) this.triggerDrum(time, 120, 0.7);
+            }
+
+            // --- INSTRUMENTS ---
+            triggerRetroSynth(time, freq, duration, type='square') {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0.1, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(time); osc.stop(time + duration);
+            }
+            triggerPipa(time, freq, duration, type='triangle') {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(0.2, time + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(time); osc.stop(time + duration);
+            }
+            triggerDrum(time, freq, vol) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(freq, time);
+                osc.frequency.exponentialRampToValueAtTime(10, time + 0.2);
+                gain.gain.setValueAtTime(vol * 0.5, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(time); osc.stop(time + 0.2);
+            }
+            triggerGong(time, vol) {
+                const osc1 = this.ctx.createOscillator(); const osc2 = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc1.type = 'square'; osc2.type = 'sawtooth';
+                osc1.frequency.value = 200; osc2.frequency.value = 284; 
+                const modGain = this.ctx.createGain(); modGain.gain.value = 500;
+                osc2.connect(modGain); modGain.connect(osc1.frequency);
+                osc1.connect(gain); gain.connect(this.masterGain);
+                gain.gain.setValueAtTime(vol * 0.3, time);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 1.5); 
+                osc1.start(time); osc2.start(time); osc1.stop(time + 1.5); osc2.stop(time + 1.5);
+            }
+            triggerFlute(time, freq, duration) {
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(0.1, time + 0.1); 
+                gain.gain.linearRampToValueAtTime(0, time + duration);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(time); osc.stop(time + duration);
+            }
+            triggerNoise(time, duration, vol) {
+                const bufferSize = this.ctx.sampleRate * duration;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass'; filter.frequency.value = 1000;
+                gain.gain.setValueAtTime(vol, time);
+                gain.gain.linearRampToValueAtTime(0, time + duration);
+                noise.connect(filter); filter.connect(gain);
+                gain.connect(this.masterGain);
+                noise.start(time);
+            }
+            triggerClick(time, vol) { this.triggerNoise(time, 0.05, vol); }
+            playShoot() {
+                if(this.muted || !this.ctx) return;
+                const t = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.frequency.setValueAtTime(800, t);
+                osc.frequency.exponentialRampToValueAtTime(300, t + 0.15);
+                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(t); osc.stop(t + 0.2);
+            }
+            playHit() { if(this.muted || !this.ctx) return; this.triggerDrum(this.ctx.currentTime, 60, 0.5); }
+            playBuild() { if(this.muted || !this.ctx) return; const t = this.ctx.currentTime; this.triggerPipa(t, 523.25, 0.2); this.triggerPipa(t+0.1, 659.25, 0.2); }
+            playSell() { if(this.muted || !this.ctx) return; this.triggerGong(this.ctx.currentTime, 0.1); }
+            playWin() { if(this.muted || !this.ctx) return; [523, 523, 523, 659, 783].forEach((f, i) => { setTimeout(() => this.triggerPipa(this.ctx.currentTime, f, 0.4), i * 150); }); }
+            playLose() { if(this.muted || !this.ctx) return; [392, 370, 349, 330].forEach((f, i) => { setTimeout(() => this.triggerPipa(this.ctx.currentTime, f, 0.5), i * 300); }); }
+        }
+
+        const soundManager = new SoundManager();
+        function toggleSound() { soundManager.toggle(); }
+
+        // --- Game Constants & State ---
+        // Base Archetypes (Default values)
         const ARCHETYPES = {
             'archer': { type: 'single', range: 180, damage: 15, cooldown: 25, speed: 12, nameType: '神射', desc: '射程遠，攻速中等' },
             'fast':   { type: 'single', range: 130, damage: 8, cooldown: 10, speed: 15, nameType: '突擊', desc: '攻速極快，低傷害' },
             'heavy':  { type: 'single', range: 120, damage: 60, cooldown: 55, speed: 10, nameType: '重擊', desc: '攻擊高，攻速慢' },
-            'line':   { type: 'line', range: 150, damage: 25, cooldown: 40, speed: 18, nameType: '穿透', desc: '直線貫穿多個敵人' },
+            'line':   { type: 'line', range: 150, damage: 14, cooldown: 40, speed: 18, nameType: '穿透', desc: '直線貫穿多個敵人' },
             'splash': { type: 'splash', range: 110, damage: 40, cooldown: 60, speed: 8, nameType: '範圍', desc: '造成小範圍爆炸傷害' },
             'magic':  { type: 'magic', range: 160, damage: 20, cooldown: 50, speed: 8, nameType: '法術', desc: '範圍傷害並附加異常狀態' }
         };
 
+        // Unique Stats for Each General
         const FACTIONS = {
             'shu': {
                 name: '蜀漢', color: '#2e7d32', bgColor: '#d7ccc8', mapPrefixes: ['劍閣', '漢中', '祁山', '街亭', '定軍山'],
                 generals: [
-                    { id: 'huang', name: '黃忠', icon: '\u{1F3F9}', cost: 60, base: 'archer', color: '#4caf50' },
-                    { id: 'zhao', name: '趙雲', icon: '\u{26A1}', cost: 90, base: 'fast', color: '#03a9f4' },
-                    { id: 'guan', name: '關羽', icon: '\u{1F5E1}', cost: 120, base: 'heavy', color: '#c62828' },
-                    { id: 'ma', name: '馬超', icon: '\u{1F40E}', cost: 140, base: 'line', color: '#ff9800' },
-                    { id: 'zhang', name: '張飛', icon: '\u{1F4A5}', cost: 180, base: 'splash', color: '#5d4037' },
-                    { id: 'zhuge', name: '諸葛亮', icon: '\u{262F}', cost: 250, base: 'magic', color: '#3f51b5', effect: 'slow' }
+                    { id: 'huang', name: '黃忠', icon: '\u{1F3F9}', cost: 60, base: 'archer', color: '#4caf50', 
+                      stats: { range: 220 } }, // +25% Range
+                    { id: 'zhao', name: '趙雲', icon: '\u{26A1}', cost: 90, base: 'fast', color: '#03a9f4',
+                      stats: { cooldown: 8 } }, // Faster
+                    { id: 'guan', name: '關羽', icon: '\u{1F5E1}', cost: 120, base: 'heavy', color: '#c62828',
+                      stats: { damage: 80 } }, // +33% Damage
+                    { id: 'ma', name: '馬超', icon: '\u{1F40E}', cost: 140, base: 'line', color: '#ff9800',
+                      stats: { damage: 18 } }, // Higher pierce dmg
+                    { id: 'zhang', name: '張飛', icon: '\u{1F4A5}', cost: 180, base: 'splash', color: '#5d4037',
+                      stats: { range: 130 } }, // Better range
+                    { id: 'zhuge', name: '諸葛亮', icon: '\u{262F}', cost: 250, base: 'magic', color: '#3f51b5', effect: 'slow',
+                      stats: { cooldown: 40 } } // Faster slow
                 ],
                 decorations: ['\u{1F332}', '\u{1FAA8}', '\u{26F0}']
             },
             'wei': {
                 name: '曹魏', color: '#1565c0', bgColor: '#cfd8dc', mapPrefixes: ['許昌', '合肥', '樊城', '官渡', '宛城'],
                 generals: [
-                    { id: 'xiahou_y', name: '夏侯淵', icon: '\u{1F3F9}', cost: 60, base: 'archer', color: '#5c6bc0' },
-                    { id: 'zhang_l', name: '張遼', icon: '\u{2694}', cost: 90, base: 'fast', color: '#3949ab' },
-                    { id: 'xiahou_d', name: '夏侯惇', icon: '\u{1F441}', cost: 120, base: 'heavy', color: '#283593' },
-                    { id: 'xu', name: '徐晃', icon: '\u{1FA93}', cost: 140, base: 'line', color: '#1a237e' },
-                    { id: 'dian', name: '典韋', icon: '\u{1F4AA}', cost: 180, base: 'splash', color: '#0d47a1' },
-                    { id: 'sima', name: '司馬懿', icon: '\u{1F52E}', cost: 250, base: 'magic', color: '#4a148c', effect: 'stun' }
+                    { id: 'xiahou_y', name: '夏侯淵', icon: '\u{1F3F9}', cost: 60, base: 'archer', color: '#5c6bc0',
+                      stats: { cooldown: 20 } }, // Fast Archer
+                    { id: 'zhang_l', name: '張遼', icon: '\u{2694}', cost: 90, base: 'fast', color: '#3949ab',
+                      stats: { damage: 10 } }, // Stronger Fast
+                    { id: 'xiahou_d', name: '夏侯惇', icon: '\u{1F441}', cost: 120, base: 'heavy', color: '#283593',
+                      stats: { cooldown: 45 } }, // Faster Heavy
+                    { id: 'xu', name: '徐晃', icon: '\u{1FA93}', cost: 140, base: 'line', color: '#1a237e',
+                      stats: { range: 170 } }, // Long Pierce
+                    { id: 'dian', name: '典韋', icon: '\u{1F4AA}', cost: 180, base: 'splash', color: '#0d47a1',
+                      stats: { damage: 50, splashRadius: 80 } }, // Big Boom
+                    { id: 'sima', name: '司馬懿', icon: '\u{1F52E}', cost: 250, base: 'magic', color: '#4a148c', effect: 'stun',
+                      stats: { damage: 30 } } // High Dmg Stun
                 ],
                 decorations: ['\u{1F9F1}', '\u{1F33E}', '\u{1F3DA}']
             },
             'wu': {
                 name: '東吳', color: '#c62828', bgColor: '#b3e5fc', mapPrefixes: ['赤壁', '夷陵', '建業', '濡須口', '柴桑'],
                 generals: [
-                    { id: 'sun', name: '孫尚香', icon: '\u{1F3F9}', cost: 60, base: 'archer', color: '#ef5350' },
-                    { id: 'gan', name: '甘寧', icon: '\u{1F514}', cost: 90, base: 'fast', color: '#e53935' },
-                    { id: 'taishi', name: '太史慈', icon: '\u{1F6E1}', cost: 120, base: 'heavy', color: '#c62828' },
-                    { id: 'ling', name: '凌統', icon: '\u{1F531}', cost: 140, base: 'line', color: '#b71c1c' },
-                    { id: 'huang_g', name: '黃蓋', icon: '\u{1F4A3}', cost: 180, base: 'splash', color: '#880e4f' },
-                    { id: 'zhou', name: '周瑜', icon: '\u{1F525}', cost: 250, base: 'magic', color: '#ff5722', effect: 'burn' }
+                    { id: 'sun', name: '孫尚香', icon: '\u{1F3F9}', cost: 60, base: 'archer', color: '#ef5350',
+                      stats: { cooldown: 18, damage: 10 } }, // Machine gun style
+                    { id: 'gan', name: '甘寧', icon: '\u{1F514}', cost: 90, base: 'fast', color: '#e53935',
+                      stats: { effect: 'burn' } }, // Bleed/Burn Fast
+                    { id: 'taishi', name: '太史慈', icon: '\u{1F6E1}', cost: 120, base: 'heavy', color: '#c62828',
+                      stats: { range: 140 } }, // Long Heavy
+                    { id: 'ling', name: '凌統', icon: '\u{1F531}', cost: 140, base: 'line', color: '#b71c1c',
+                      stats: { cooldown: 30 } }, // Fast Pierce
+                    { id: 'huang_g', name: '黃蓋', icon: '\u{1F4A3}', cost: 180, base: 'splash', color: '#880e4f',
+                      stats: { damage: 30, cooldown: 40 } }, // Fast Splash
+                    { id: 'zhou', name: '周瑜', icon: '\u{1F525}', cost: 250, base: 'magic', color: '#ff5722', effect: 'burn',
+                      stats: { damage: 40 } } // Nuke Burn
                 ],
                 decorations: ['\u{1F343}', '\u{3030}', '\u{1F41F}']
             }
@@ -335,7 +636,6 @@
         const GRID_SIZE = 40;
         const COLS = 22;
         const ROWS = 17;
-        // Fix for HDPI screens
         const dpr = window.devicePixelRatio || 1;
         
         let gameState = {
@@ -349,17 +649,15 @@
         };
 
         function resizeCanvas() {
-            // Logic to keep canvas aspect ratio but fill width
             const container = document.getElementById('game-wrapper');
-            // We want internal resolution 880x700
             canvas.width = 880; 
             canvas.height = 700;
-            // CSS handles visual scaling
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         function startGame(factionKey) {
+            soundManager.init();
             const faction = FACTIONS[factionKey];
             gameState.activeFaction = factionKey;
             gameState.factionData = faction;
@@ -373,8 +671,8 @@
             gameLoop();
         }
 
-        // --- FIXED Map Generator ---
         function generateForkMap() {
+            soundManager.selectRandomTrack(); 
             const faction = gameState.factionData;
             const prefix = faction.mapPrefixes[Math.floor(Math.random() * faction.mapPrefixes.length)];
             const suffix = MAP_SUFFIXES[Math.floor(Math.random() * MAP_SUFFIXES.length)];
@@ -384,12 +682,10 @@
             document.getElementById('faction-title').style.color = faction.color;
             document.getElementById('map-label').textContent = `關卡: ${gameState.difficultyLevel}`;
 
-            // 1. Generate Main Path (Grid Coords)
             const startY = 3 + Math.floor(Math.random() * (ROWS - 6));
             const endY = 3 + Math.floor(Math.random() * (ROWS - 6));
             let mainPathGrid = createPathGrid({x: 0, y: startY}, {x: COLS-1, y: endY}, true); 
             
-            // 2. Generate Loops
             let pathsGrid = [mainPathGrid];
             let numLoops = 1;
             if (gameState.difficultyLevel >= 3) numLoops = 2;
@@ -464,7 +760,7 @@
         function generateDecorations(roadTileSet) {
             const faction = gameState.factionData;
             gameState.decorations = [];
-            const decoCount = 20 + Math.floor(Math.random() * 10);
+            const decoCount = 30 + Math.floor(Math.random() * 20); // INCREASED DECORATIONS
             for (let i = 0; i < decoCount; i++) {
                 const c = Math.floor(Math.random() * COLS);
                 const r = Math.floor(Math.random() * ROWS);
@@ -582,6 +878,7 @@
                 this.hp -= amt;
                 if (this.hp <= 0) {
                     gameState.gold += this.reward; updateStatsUI();
+                    soundManager.playHit();
                     createParticles(this.x, this.y, this.color); return true;
                 }
                 return false;
@@ -596,9 +893,21 @@
             constructor(c, r, genIndex) {
                 this.c = c; this.r = r; this.x = c * GRID_SIZE + GRID_SIZE/2; this.y = r * GRID_SIZE + GRID_SIZE/2;
                 const gen = gameState.factionData.generals[genIndex]; const base = ARCHETYPES[gen.base];
-                this.name = gen.name; this.icon = gen.icon; this.color = gen.color; this.effect = gen.effect || null;
-                this.level = 1; this.baseCost = gen.cost; this.damage = base.damage; this.range = base.range;
-                this.cooldownMax = base.cooldown; this.type = base.type; this.projSpeed = base.speed; this.cooldown = 0;
+                
+                // Merge base stats with overrides
+                const stats = { ...base, ...(gen.stats || {}) };
+                
+                this.name = gen.name; this.icon = gen.icon; this.color = gen.color; 
+                this.effect = gen.effect || stats.effect || null;
+                
+                this.level = 1; this.baseCost = gen.cost; 
+                this.damage = stats.damage; 
+                this.range = stats.range;
+                this.cooldownMax = stats.cooldown; 
+                this.type = stats.type; 
+                this.projSpeed = stats.speed; 
+                this.splashRadius = stats.splashRadius || 60; // specific for splash
+                this.cooldown = 0;
             }
             update() {
                 if (this.cooldown > 0) this.cooldown--;
@@ -607,9 +916,10 @@
             }
             findTarget() { for(let e of gameState.enemies) { if (Math.hypot(e.x - this.x, e.y - this.y) <= this.range) return e; } return null; }
             shoot(target) {
+                soundManager.playShoot();
                 gameState.projectiles.push({
                     x: this.x, y: this.y, target: target, damage: this.damage, color: this.color, type: this.type, speed: this.projSpeed,
-                    effect: this.effect, active: true, angle: Math.atan2(target.y - this.y, target.x - this.x), life: 30
+                    effect: this.effect, active: true, angle: Math.atan2(target.y - this.y, target.x - this.x), life: 30, splashRadius: this.splashRadius
                 });
             }
             draw() {
@@ -626,6 +936,7 @@
                 if (gameState.gold >= cost) {
                     gameState.gold -= cost; this.level++; this.damage = Math.floor(this.damage * 1.4);
                     this.range = Math.floor(this.range * 1.1); this.baseCost += cost;
+                    soundManager.playBuild();
                     createParticles(this.x, this.y, '#ffd700'); updateDetailPanel(); updateStatsUI();
                 }
             }
@@ -633,12 +944,30 @@
 
         function selectTowerType(index) {
             if (gameState.gameOver) return;
-            const gen = gameState.factionData.generals[index]; const base = ARCHETYPES[gen.base];
+            const gen = gameState.factionData.generals[index]; 
+            const base = ARCHETYPES[gen.base];
+            // Merge for display
+            const stats = { ...base, ...(gen.stats || {}) };
+            
             if (gameState.selectedTowerType === index) deselectAll();
             else {
                 gameState.selectedTowerType = index; gameState.selectedPlacedTower = null;
                 const panel = document.getElementById('detail-panel');
-                panel.innerHTML = `<div class="detail-title"><span>${gen.icon} ${gen.name}</span><span>💰${gen.cost}</span></div><div class="detail-row"><span>類型:</span><span>${base.nameType}</span></div><div class="detail-row"><span>攻擊:</span><span>${base.damage}</span></div><div class="detail-row"><span>範圍:</span><span>${base.range}</span></div><div class="detail-desc">${base.desc}</div>${gen.effect ? `<div class="detail-desc" style="color:#64b5f6">特效: ${gen.effect==='slow'?"減速":gen.effect==='stun'?"暈眩":gen.effect==='burn'?"灼燒":""}</div>` : ''}`;
+                
+                const effectName = gen.effect === 'slow' || stats.effect === 'slow' ? "減速" :
+                                   gen.effect === 'stun' || stats.effect === 'stun' ? "暈眩" :
+                                   gen.effect === 'burn' || stats.effect === 'burn' ? "灼燒" : "無";
+
+                panel.innerHTML = `
+                    <div class="detail-title"><span>${gen.icon} ${gen.name}</span><span>💰${gen.cost}</span></div>
+                    <div class="detail-grid">
+                        <div class="detail-item"><span class="detail-label">類型:</span><span class="detail-val">${base.nameType}</span></div>
+                        <div class="detail-item"><span class="detail-label">攻擊:</span><span class="detail-val">${stats.damage}</span></div>
+                        <div class="detail-item"><span class="detail-label">範圍:</span><span class="detail-val">${stats.range}</span></div>
+                        <div class="detail-item"><span class="detail-label">攻速:</span><span class="detail-val">${(60/stats.cooldown).toFixed(1)}/s</span></div>
+                    </div>
+                    <div class="detail-desc">${base.desc} ${gen.effect ? `(特效: ${effectName})` : ''}</div>
+                `;
                 document.getElementById('action-area').classList.add('hidden'); updateTowerButtons();
             }
         }
@@ -651,7 +980,14 @@
             const t = gameState.selectedPlacedTower; if (!t) return;
             const upgCost = Math.floor(t.baseCost * 0.8); const sellCost = Math.floor(t.baseCost * 0.6);
             const panel = document.getElementById('detail-panel');
-            panel.innerHTML = `<div class="detail-title"><span>${t.icon} ${t.name}</span><span>Lv.${t.level}</span></div><div class="detail-row"><span>傷害:</span><span>${t.damage}</span></div><div class="detail-row"><span>範圍:</span><span>${Math.floor(t.range)}</span></div><div class="detail-desc">已佈署的武將。</div>`;
+            panel.innerHTML = `
+                <div class="detail-title"><span>${t.icon} ${t.name}</span><span>Lv.${t.level}</span></div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span class="detail-label">傷害:</span><span class="detail-val">${t.damage}</span></div>
+                    <div class="detail-item"><span class="detail-label">範圍:</span><span class="detail-val">${Math.floor(t.range)}</span></div>
+                </div>
+                <div class="detail-desc">已佈署的武將。</div>
+            `;
             document.getElementById('action-area').classList.remove('hidden');
             document.getElementById('cost-upg').textContent = `(${upgCost})`; document.getElementById('cost-sell').textContent = `(${sellCost})`;
             document.getElementById('btn-upgrade').disabled = gameState.gold < upgCost;
@@ -678,6 +1014,7 @@
             if (gameState.selectedPlacedTower) {
                 const t = gameState.selectedPlacedTower; gameState.gold += Math.floor(t.baseCost * 0.6);
                 const idx = gameState.towers.indexOf(t); if (idx > -1) gameState.towers.splice(idx, 1);
+                soundManager.playSell();
                 createParticles(t.x, t.y, '#9e9e9e'); deselectAll(); updateStatsUI();
             }
         }
@@ -698,6 +1035,7 @@
 
         function startNextWave() {
             if (gameState.active) return;
+            soundManager.init(); // Ensure audio context is ready
             gameState.active = true; gameState.wave++; gameState.spawning = true;
             gameState.enemiesToSpawn = generateWaveComposition(gameState.wave);
             gameState.spawnTimer = 0; updateStatsUI();
@@ -740,13 +1078,22 @@
                 if (p.type === 'line') {
                     p.x += Math.cos(p.angle) * p.speed; p.y += Math.sin(p.angle) * p.speed;
                     p.life--; if (p.life <= 0) p.active = false;
-                    gameState.enemies.forEach(e => { if (Math.hypot(e.x - p.x, e.y - p.y) < e.radius + 5) { e.takeDamage(p.damage); createParticles(e.x, e.y, p.color); }});
+                    gameState.enemies.forEach(e => {
+                        // Narrowed hit detection logic for Line attack nerf
+                        if (Math.hypot(e.x - p.x, e.y - p.y) < e.radius + 2) { // Radius + 2 is narrower than before
+                             if (e.takeDamage(p.damage)) createParticles(e.x, e.y, p.color); 
+                        }
+                    });
                 } else {
                     if (p.target.hp <= 0) { p.active = false; continue; }
                     const dx = p.target.x - p.x; const dy = p.target.y - p.y; const dist = Math.hypot(dx, dy);
                     if (dist < p.speed) {
                         p.active = false; const targets = [];
-                        if (p.type === 'splash' || p.type === 'magic') gameState.enemies.forEach(e => { if (Math.hypot(e.x - p.target.x, e.y - p.target.y) < (p.type==='splash'?60:50)) targets.push(e); });
+                        if (p.type === 'splash' || p.type === 'magic') gameState.enemies.forEach(e => { 
+                            // Use stored splash radius or default
+                            const radius = p.splashRadius || 60;
+                            if (Math.hypot(e.x - p.target.x, e.y - p.target.y) < radius) targets.push(e); 
+                        });
                         else targets.push(p.target);
                         targets.forEach(e => {
                             e.takeDamage(p.damage);
@@ -760,6 +1107,7 @@
             if (!gameState.spawning && gameState.enemies.length === 0) {
                 gameState.active = false;
                 if (gameState.wave === 5) {
+                    soundManager.playWin();
                     const bonus = 250 + (gameState.difficultyLevel * 50);
                     document.getElementById('level-reward').textContent = `獎勵: ${bonus} 庫銀 (庫銀將保留至下一關)`;
                     document.getElementById('level-screen').classList.remove('hidden');
@@ -828,6 +1176,7 @@
                 const gen = gameState.factionData.generals[gameState.selectedTowerType];
                 if (gameState.gold >= gen.cost) {
                     gameState.gold -= gen.cost; gameState.towers.push(new Tower(c, r, gameState.selectedTowerType));
+                    soundManager.playBuild();
                     createParticles(c*GRID_SIZE+20, r*GRID_SIZE+20, '#fff'); updateStatsUI();
                 }
             } else { deselectAll(); }
@@ -852,6 +1201,7 @@
             draw() { ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, 3, 3); }
         }
         function gameOver() {
+            soundManager.playLose();
             gameState.gameOver = true; gameState.active = false;
             document.getElementById('end-screen').classList.remove('hidden');
             document.getElementById('end-desc').textContent = `你的霸業在第 ${gameState.difficultyLevel} 關，第 ${gameState.wave} 波結束了。`;
