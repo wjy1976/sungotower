@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三國の演義：無限塔防</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>三國の演義：無限塔防 </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
@@ -26,20 +26,25 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             color: #333;
             user-select: none;
+            -webkit-user-select: none;
         }
 
         #game-wrapper {
             position: relative;
-            width: 1200px;
-            height: 700px;
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            max-height: 800px;
             background-color: var(--bg-color);
             border: 4px solid var(--panel-color);
             box-shadow: 0 0 30px rgba(0,0,0,0.7);
             display: flex;
-            flex-direction: row;
+            flex-direction: column; /* Mobile default: Vertical stack */
+            overflow: hidden;
         }
 
         /* --- Screens --- */
@@ -57,6 +62,9 @@
             align-items: center;
             color: white;
             transition: opacity 0.3s;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
         }
 
         .hidden {
@@ -66,79 +74,143 @@
         }
 
         /* Menu Styles */
-        .faction-select { display: flex; gap: 20px; margin-top: 40px; }
+        .faction-select { 
+            display: flex; 
+            gap: 20px; 
+            margin-top: 40px; 
+            flex-wrap: wrap; 
+            justify-content: center;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
         .faction-card {
             width: 200px; height: 320px; border: 4px solid #555; border-radius: 8px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.1);
+            flex-shrink: 0;
         }
-        .faction-card:hover { transform: translateY(-10px); box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .faction-card:active, .faction-card:hover { transform: translateY(-5px); box-shadow: 0 0 20px rgba(255,215,0,0.3); }
         .faction-shu { border-color: var(--shu-color); }
-        .faction-shu:hover { background: linear-gradient(to bottom, rgba(46,125,50,0.2), transparent); }
         .faction-wei { border-color: var(--wei-color); }
-        .faction-wei:hover { background: linear-gradient(to bottom, rgba(21,101,192,0.2), transparent); }
         .faction-wu { border-color: var(--wu-color); }
-        .faction-wu:hover { background: linear-gradient(to bottom, rgba(198,40,40,0.2), transparent); }
+        
         .faction-symbol { font-size: 80px; margin-bottom: 20px; }
         .faction-name { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
         .faction-desc { font-size: 14px; text-align: center; padding: 0 15px; color: #ccc; line-height: 1.5; }
 
-        /* Level Complete Screen */
-        #level-screen h2 { font-size: 40px; color: #ffd700; margin-bottom: 10px; }
-        #level-screen p { font-size: 18px; color: #eee; margin-bottom: 30px; }
+        /* Level Complete & Game Over */
+        #level-screen h2, #end-screen h2 { font-size: 8vw; color: #ffd700; margin-bottom: 10px; }
+        #end-screen h2 { color: #ef5350; }
+        #level-screen p, #end-screen p { font-size: 18px; color: #eee; margin-bottom: 30px; }
         .next-btn {
             background: linear-gradient(#4caf50, #2e7d32); border: 2px solid #a5d6a7;
             padding: 15px 40px; font-size: 24px; color: white; cursor: pointer;
             border-radius: 8px; font-family: 'Noto Serif TC', serif; font-weight: bold;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-        .next-btn:hover { transform: scale(1.05); }
+        .next-btn:active { transform: scale(0.95); }
 
-        /* Game UI */
-        #game-canvas { flex-grow: 1; background-color: #dccbba; cursor: crosshair; }
+        /* Game UI Layout */
+        #game-canvas { 
+            background-color: #dccbba; 
+            cursor: crosshair; 
+            touch-action: none; /* Prevent scrolling on touch */
+            width: 100%;
+            height: auto;
+            flex-shrink: 1; /* Allow shrinking */
+            object-fit: contain;
+        }
+
         #ui-sidebar {
-            width: 320px; background-color: var(--panel-color); color: var(--text-color);
-            padding: 15px; display: flex; flex-direction: column; border-left: 4px solid #1a100e;
-            box-sizing: border-box; z-index: 10;
+            width: 100%; 
+            background-color: var(--panel-color); 
+            color: var(--text-color);
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            border-top: 4px solid #1a100e;
+            box-sizing: border-box; 
+            z-index: 10;
+            overflow-y: auto;
+            flex-shrink: 0; /* Don't shrink sidebar too much */
+            height: 40vh; /* Mobile height */
         }
-        h1 { margin: 0 0 10px 0; font-size: 22px; text-align: center; border-bottom: 2px solid var(--text-color); padding-bottom: 10px; color: #ffb74d; }
-        .header-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; color: #bdbdbd; }
+
+        /* Responsive Layout for Desktop/Tablet Landscape */
+        @media (min-width: 1024px) {
+            #game-wrapper {
+                flex-direction: row;
+                height: 700px; /* Fixed height for desktop look */
+            }
+            #game-canvas {
+                width: 880px; /* Base width */
+                height: 700px;
+                flex: none;
+            }
+            #ui-sidebar {
+                width: 320px;
+                height: 100%;
+                border-top: none;
+                border-left: 4px solid #1a100e;
+            }
+            #level-screen h2, #end-screen h2 { font-size: 40px; }
+        }
+
+        h1 { margin: 0 0 5px 0; font-size: 20px; text-align: center; border-bottom: 2px solid var(--text-color); padding-bottom: 5px; color: #ffb74d; }
+        .header-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; color: #bdbdbd; }
+        
         .stats-panel {
-            display: flex; justify-content: space-between; margin-bottom: 15px;
-            background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;
+            display: flex; justify-content: space-between; margin-bottom: 10px;
+            background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px;
         }
-        .stat-item { display: flex; flex-direction: column; align-items: center; font-size: 13px; }
-        .stat-value { font-size: 18px; font-weight: bold; color: #ffb74d; margin-top: 4px; }
-        .tower-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .stat-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; }
+        .stat-value { font-size: 16px; font-weight: bold; color: #ffb74d; margin-top: 2px; }
+        
+        .tower-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); /* 3 cols on mobile */
+            gap: 6px; 
+            margin-bottom: 10px; 
+        }
+        @media (min-width: 1024px) {
+            .tower-grid { grid-template-columns: 1fr 1fr; } /* 2 cols on desktop sidebar */
+        }
+
         .tower-btn {
             display: flex; flex-direction: column; align-items: center; background-color: #4e342e;
-            border: 2px solid #6d4c41; padding: 6px; cursor: pointer; border-radius: 4px; transition: all 0.1s;
+            border: 2px solid #6d4c41; padding: 4px; cursor: pointer; border-radius: 4px; transition: all 0.1s;
+            min-height: 60px; justify-content: center;
         }
-        .tower-btn:hover { background-color: #5d4037; border-color: #ffb74d; }
+        .tower-btn:active, .tower-btn:hover { background-color: #5d4037; border-color: #ffb74d; }
         .tower-btn.selected { background-color: #1b5e20; border-color: #66bb6a; box-shadow: 0 0 8px #66bb6a; }
         .tower-btn.disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
-        .tower-icon-display { font-size: 20px; margin-bottom: 2px; }
-        .tower-name { font-size: 14px; font-weight: bold; }
-        .tower-cost { font-size: 12px; color: #ffcc80; }
+        .tower-icon-display { font-size: 24px; margin-bottom: 2px; }
+        .tower-name { font-size: 12px; font-weight: bold; }
+        .tower-cost { font-size: 11px; color: #ffcc80; }
+        
         #detail-panel {
-            background: rgba(0,0,0,0.3); border: 1px solid #8d6e63; padding: 10px;
-            border-radius: 4px; margin-bottom: 10px; font-size: 13px; min-height: 120px;
+            background: rgba(0,0,0,0.3); border: 1px solid #8d6e63; padding: 8px;
+            border-radius: 4px; margin-bottom: 10px; font-size: 12px; min-height: 80px;
+            flex-grow: 1; /* Fill space */
         }
-        .detail-title { color: #ffb74d; font-weight: bold; font-size: 15px; margin-bottom: 5px; border-bottom: 1px solid #5d4037; padding-bottom: 3px; display: flex; justify-content: space-between; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .detail-desc { margin-top: 8px; color: #e0e0e0; font-style: italic; line-height: 1.4; }
-        .action-row { display: flex; gap: 5px; margin-top: auto; margin-bottom: 10px; }
-        .btn-mini { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; font-family: inherit; }
+        .detail-title { color: #ffb74d; font-weight: bold; font-size: 14px; margin-bottom: 4px; border-bottom: 1px solid #5d4037; padding-bottom: 2px; display: flex; justify-content: space-between; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        .detail-desc { margin-top: 4px; color: #e0e0e0; font-style: italic; line-height: 1.3; }
+        
+        .action-row { display: flex; gap: 5px; margin-top: auto; margin-bottom: 5px; }
+        .btn-mini { flex: 1; padding: 10px 0; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; font-family: inherit; font-size: 14px; }
         .btn-upg { background-color: #2e7d32; }
         .btn-upg:disabled { background-color: #1b5e20; opacity: 0.5; }
         .btn-sell { background-color: #c62828; }
+        
         #start-btn {
-            width: 100%; padding: 12px; font-family: inherit; font-size: 18px; font-weight: bold;
+            width: 100%; padding: 14px; font-family: inherit; font-size: 18px; font-weight: bold;
             background-color: var(--accent-color); color: white; border: none; cursor: pointer;
             border-radius: 4px; box-shadow: 0 4px #b71c1c; margin-top: auto;
         }
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
         #start-btn:disabled { background-color: #757575; box-shadow: none; }
+        
         .back-btn {
             position: absolute; top: 10px; left: 10px; background: transparent;
             border: 1px solid #ffb74d; color: #ffb74d; padding: 5px 15px; cursor: pointer; font-family: inherit; z-index: 200;
@@ -198,7 +270,7 @@
                 <div class="stat-item"><span>庫銀</span><span id="gold-display" class="stat-value" style="color: #ffd700;">150</span></div>
             </div>
             <div id="tower-grid" class="tower-grid"></div>
-            <div id="detail-panel"><div style="text-align: center; color: #757575; padding-top: 40px;">選擇武將查看詳情</div></div>
+            <div id="detail-panel"><div style="text-align: center; color: #757575; padding-top: 20px;">選擇武將查看詳情</div></div>
             <div id="action-area" class="action-row hidden">
                 <button id="btn-upgrade" class="btn-mini btn-upg" onclick="actionUpgrade()">晉升 <span id="cost-upg">(100)</span></button>
                 <button id="btn-sell" class="btn-mini btn-sell" onclick="actionSell()">撤退 <span id="cost-sell">(50)</span></button>
@@ -263,6 +335,8 @@
         const GRID_SIZE = 40;
         const COLS = 22;
         const ROWS = 17;
+        // Fix for HDPI screens
+        const dpr = window.devicePixelRatio || 1;
         
         let gameState = {
             activeFaction: null, factionData: null, difficultyLevel: 1, 
@@ -273,6 +347,17 @@
             allPaths: [], roadTiles: [], decorations: [], mapName: "",
             mouseX: 0, mouseY: 0
         };
+
+        function resizeCanvas() {
+            // Logic to keep canvas aspect ratio but fill width
+            const container = document.getElementById('game-wrapper');
+            // We want internal resolution 880x700
+            canvas.width = 880; 
+            canvas.height = 700;
+            // CSS handles visual scaling
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         function startGame(factionKey) {
             const faction = FACTIONS[factionKey];
@@ -289,7 +374,6 @@
         }
 
         // --- FIXED Map Generator ---
-        // Uses purely Grid Coordinates for calculation, converts to Pixel only at storage
         function generateForkMap() {
             const faction = gameState.factionData;
             const prefix = faction.mapPrefixes[Math.floor(Math.random() * faction.mapPrefixes.length)];
@@ -301,11 +385,8 @@
             document.getElementById('map-label').textContent = `關卡: ${gameState.difficultyLevel}`;
 
             // 1. Generate Main Path (Grid Coords)
-            // Start at (0, random Y), End at (21, random Y)
             const startY = 3 + Math.floor(Math.random() * (ROWS - 6));
             const endY = 3 + Math.floor(Math.random() * (ROWS - 6));
-            
-            // Allow main path to deviate in Y
             let mainPathGrid = createPathGrid({x: 0, y: startY}, {x: COLS-1, y: endY}, true); 
             
             // 2. Generate Loops
@@ -324,11 +405,8 @@
                 if (startIdx < endIdx) {
                     let startNode = mainPathGrid[startIdx];
                     let endNode = mainPathGrid[endIdx];
-                    
-                    // Force deviation for loop
                     let altPathGrid = createPathGrid(startNode, endNode, true, true);
                     
-                    // Stitch full path
                     let fullPath = [];
                     for(let k=0; k<=startIdx; k++) fullPath.push(mainPathGrid[k]);
                     for(let k=1; k<altPathGrid.length-1; k++) fullPath.push(altPathGrid[k]);
@@ -337,10 +415,8 @@
                 }
             }
 
-            // 3. Convert to Pixels for Game Engine
             gameState.allPaths = pathsGrid.map(path => path.map(p => toPixel(p)));
 
-            // 4. Tiles for drawing
             const roadTileSet = new Set();
             pathsGrid.forEach(path => {
                 path.forEach(p => roadTileSet.add(`${p.x},${p.y}`));
@@ -354,7 +430,6 @@
             generateDecorations(roadTileSet);
         }
 
-        // Generate path between two GRID points
         function createPathGrid(start, end, varyY = false, forceDeviation = false) {
             let path = [];
             let curr = {x: start.x, y: start.y};
@@ -364,10 +439,8 @@
             let midY;
             
             if (forceDeviation) {
-                // Pick a Y far from center line
                 let dir = Math.random() > 0.5 ? 1 : -1;
                 midY = curr.y + (dir * (4 + Math.floor(Math.random() * 3)));
-                // Clamp
                 midY = Math.max(2, Math.min(ROWS-3, midY));
             } else if (varyY) {
                 midY = Math.floor((start.y + end.y) / 2) + (Math.random() > 0.5 ? 2 : -2);
@@ -376,8 +449,6 @@
                 midY = curr.y;
             }
 
-            // Move X to mid, then Y to mid, then X to end, then Y to end
-            // To ensure connectivity we move 1 step at a time
             while (curr.x !== midX) { curr.x += (curr.x < midX ? 1 : -1); path.push({...curr}); }
             while (curr.y !== midY) { curr.y += (curr.y < midY ? 1 : -1); path.push({...curr}); }
             while (curr.x !== end.x) { curr.x += (curr.x < end.x ? 1 : -1); path.push({...curr}); }
@@ -440,60 +511,26 @@
                 this.x = path[0].x; this.y = path[0].y;
                 this.type = type; 
                 
-                // HP 成長公式: 1.25 的 (難度-1) 次方
                 const hpMult = Math.pow(1.25, difficulty - 1);
-                
-                // 獎金成長公式 (新): 1.12 的 (難度-1) 次方
-                // 讓後期獎金也能跟上防禦塔升級的通膨需求
                 const rewardMult = Math.pow(1.12, difficulty - 1); 
 
                 this.radius = 12; this.color = '#546e7a'; this.icon = '\u{1F482}';
-                this.baseHp = 40; this.speed = 1.8; this.baseReward = 8; // 基礎步兵
+                this.baseHp = 40; this.speed = 1.8; this.baseReward = 8;
                 this.scale = 1.0; this.name = "步兵"; this.regen = 0;
 
-                // 設定各兵種的基礎能力與獎金 (能力越強，基礎獎金越高)
-                if (type === 'scout') { 
-                    this.icon = '\u{1F406}'; this.baseHp = 25; this.speed = 2.8; this.color = '#8d6e63'; 
-                    this.baseReward = 10; this.name = "斥候"; 
-                }
-                else if (type === 'heavy') { 
-                    this.icon = '\u{1F6E1}'; this.baseHp = 120; this.speed = 1.1; this.color = '#4527a0'; 
-                    this.baseReward = 18; this.name = "重甲"; // 高血量，獎金較高
-                }
-                else if (type === 'cavalry') { 
-                    this.icon = '\u{1F40E}'; this.baseHp = 60; this.speed = 3.2; this.color = '#ff9800'; 
-                    this.baseReward = 15; this.name = "騎兵"; 
-                }
-                else if (type === 'taoist') { 
-                    this.icon = '\u{262F}'; this.baseHp = 50; this.speed = 1.5; this.color = '#00acc1'; 
-                    this.baseReward = 20; this.name = "道士"; this.regen = 1; // 會回血，獎金較高
-                }
-                else if (type === 'general') { 
-                    this.icon = '\u{1F47A}'; this.baseHp = 300; this.speed = 1.3; this.color = '#d81b60'; 
-                    this.baseReward = 80; this.name = "偏將"; this.radius = 16; this.scale = 1.3; // 小BOSS
-                }
-                else if (type === 'boss') { 
-                    this.icon = '\u{1F479}'; this.baseHp = 800; this.speed = 0.7; this.color = '#b71c1c'; 
-                    this.baseReward = 350; this.radius = 22; this.scale = 1.8; this.name = "敵將"; // BOSS獎金豐厚
-                }
+                if (type === 'scout') { this.icon = '\u{1F406}'; this.baseHp = 25; this.speed = 2.8; this.color = '#8d6e63'; this.baseReward = 10; this.name = "斥候"; }
+                else if (type === 'heavy') { this.icon = '\u{1F6E1}'; this.baseHp = 120; this.speed = 1.1; this.color = '#4527a0'; this.baseReward = 18; this.name = "重甲"; }
+                else if (type === 'cavalry') { this.icon = '\u{1F40E}'; this.baseHp = 60; this.speed = 3.2; this.color = '#ff9800'; this.baseReward = 15; this.name = "騎兵"; }
+                else if (type === 'taoist') { this.icon = '\u{262F}'; this.baseHp = 50; this.speed = 1.5; this.color = '#00acc1'; this.baseReward = 20; this.name = "道士"; this.regen = 1; }
+                else if (type === 'general') { this.icon = '\u{1F47A}'; this.baseHp = 300; this.speed = 1.3; this.color = '#d81b60'; this.baseReward = 80; this.name = "偏將"; this.radius = 16; this.scale = 1.3; }
+                else if (type === 'boss') { this.icon = '\u{1F479}'; this.baseHp = 800; this.speed = 0.7; this.color = '#b71c1c'; this.baseReward = 350; this.radius = 22; this.scale = 1.8; this.name = "敵將"; }
 
-                // 精銳與神級單位的加成 (隨難度出現)
-                if (difficulty > 3 && type !== 'boss' && type !== 'general') { 
-                    this.name = "精銳" + this.name; 
-                    this.baseHp *= 1.4; 
-                    this.baseReward *= 1.5; // 精銳單位獎金 +50%
-                    this.color = '#c2185b'; 
-                }
-                if (difficulty > 6 && type !== 'boss') { 
-                    this.name = "神" + this.name; 
-                    this.baseHp *= 1.8; 
-                    this.baseReward *= 2.5; // 神級單位獎金 +150%
-                }
+                if (difficulty > 3 && type !== 'boss' && type !== 'general') { this.name = "精銳" + this.name; this.baseHp *= 1.4; this.baseReward *= 1.5; this.color = '#c2185b'; }
+                if (difficulty > 6 && type !== 'boss') { this.name = "神" + this.name; this.baseHp *= 1.8; this.baseReward *= 2.5; }
 
                 this.maxHp = Math.floor(this.baseHp * hpMult);
                 this.hp = this.maxHp;
                 this.reward = Math.floor(this.baseReward * rewardMult);
-                
                 this.frozenTimer = 0; this.burnTimer = 0; this.stunTimer = 0;
             }
 
@@ -622,7 +659,7 @@
 
         function deselectAll() {
             gameState.selectedTowerType = null; gameState.selectedPlacedTower = null;
-            document.getElementById('detail-panel').innerHTML = `<div style="text-align: center; color: #757575; padding-top: 40px;">選擇武將查看詳情</div>`;
+            document.getElementById('detail-panel').innerHTML = `<div style="text-align: center; color: #757575; padding-top: 20px;">選擇武將查看詳情</div>`;
             document.getElementById('action-area').classList.add('hidden'); updateTowerButtons();
         }
 
@@ -760,11 +797,30 @@
             }
         }
 
-        canvas.addEventListener('click', (e) => {
-            if (gameState.gameOver || !gameState.factionData) return;
+        // Input Handling helper
+        function getEventPos(e) {
             const rect = canvas.getBoundingClientRect();
-            const c = Math.floor((e.clientX - rect.left) / GRID_SIZE); const r = Math.floor((e.clientY - rect.top) / GRID_SIZE);
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function handleInputStart(e) {
+            e.preventDefault(); // Stop mouse emulation on touch
+            if (gameState.gameOver || !gameState.factionData) return;
+            const pos = getEventPos(e);
+            gameState.mouseX = pos.x;
+            gameState.mouseY = pos.y;
+            
+            const c = Math.floor(pos.x / GRID_SIZE); 
+            const r = Math.floor(pos.y / GRID_SIZE);
             if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
+
             const clicked = gameState.towers.find(t => t.c === c && t.r === r);
             if (clicked) { selectPlacedTower(clicked); return; }
             if (gameState.selectedTowerType !== null) {
@@ -775,11 +831,18 @@
                     createParticles(c*GRID_SIZE+20, r*GRID_SIZE+20, '#fff'); updateStatsUI();
                 }
             } else { deselectAll(); }
-        });
+        }
 
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect(); gameState.mouseX = e.clientX - rect.left; gameState.mouseY = e.clientY - rect.top;
-        });
+        function handleInputMove(e) {
+            const pos = getEventPos(e);
+            gameState.mouseX = pos.x;
+            gameState.mouseY = pos.y;
+        }
+
+        canvas.addEventListener('mousedown', handleInputStart);
+        canvas.addEventListener('mousemove', handleInputMove);
+        canvas.addEventListener('touchstart', handleInputStart, {passive: false});
+        canvas.addEventListener('touchmove', handleInputMove, {passive: false});
 
         function isPath(c, r) { return gameState.roadTiles.some(t => Math.floor(t.x/GRID_SIZE) === c && Math.floor(t.y/GRID_SIZE) === r); }
         function createParticles(x, y, color) { for(let i=0; i<6; i++) gameState.particles.push(new Particle(x, y, color)); }
