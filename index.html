@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>三國の演義：無限戰役 (完美修復版)</title>
+    <title>三國の演義：無限戰役 </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
@@ -101,7 +101,6 @@
         .next-btn:active { transform: scale(0.95); }
 
         /* Game UI Layout - Responsive Fixes */
-        /* Canvas Container */
         .canvas-container {
             flex-grow: 1;
             position: relative;
@@ -110,13 +109,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 0; /* Important for flex container */
+            min-height: 0;
         }
 
         #game-canvas { 
             cursor: crosshair; 
             touch-action: none; 
-            /* Force canvas to fit within container */
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
@@ -130,29 +128,16 @@
 
         /* Desktop Layout Fixes */
         @media (min-width: 1024px) {
-            #game-wrapper { 
-                flex-direction: row; 
-                height: 100%; 
-                max-height: 800px; 
-            }
+            #game-wrapper { flex-direction: row; height: 100%; max-height: 800px; }
             .canvas-container {
                 width: auto;
                 height: 100%;
-                flex-grow: 1; /* Take remaining space */
-                flex-shrink: 1; /* Allow shrinking if needed */
-                min-width: 0; /* Allow flex item to shrink below content size */
+                flex-grow: 1; flex-shrink: 1; min-width: 0;
             }
-            #game-canvas {
-                width: auto;
-                height: 100%;
-            }
+            #game-canvas { width: auto; height: 100%; }
             #ui-sidebar { 
-                width: 320px; 
-                min-width: 320px; /* Force sidebar width */
-                height: 100%; 
-                border-top: none; 
-                border-left: 4px solid #1a100e; 
-                flex-shrink: 0; /* Prevent sidebar from shrinking */
+                width: 320px; min-width: 320px; height: 100%; 
+                border-top: none; border-left: 4px solid #1a100e; flex-shrink: 0; 
             }
             #level-screen h2, #end-screen h2 { font-size: 40px; }
         }
@@ -161,10 +146,7 @@
         .header-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; color: #bdbdbd; padding: 0 8px; }
         
         .stats-panel {
-            display: grid; 
-            grid-template-columns: 1fr 1fr 1fr; /* 3 Equal Columns */
-            gap: 5px; 
-            margin-bottom: 10px;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px;
             background: rgba(0,0,0,0.3); padding: 8px 5px; border-radius: 4px;
         }
         .stat-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; }
@@ -196,15 +178,19 @@
             display: flex; justify-content: space-between; 
         }
         .detail-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 4px 10px;
-            margin-bottom: 8px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin-bottom: 8px;
         }
         .detail-item { display: flex; justify-content: space-between; align-items: center; }
         .detail-label { color: #bdbdbd; }
         .detail-val { color: #fff; font-weight: bold; }
         .detail-desc { margin-top: 4px; color: #e0e0e0; font-style: italic; line-height: 1.4; font-size: 12px; }
+        .upgrade-preview {
+            border-top: 1px dashed #5d4037;
+            padding-top: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #81c784;
+        }
         
         .action-row { display: flex; gap: 5px; margin-top: auto; margin-bottom: 5px; }
         .btn-mini { flex: 1; padding: 10px 0; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; font-family: inherit; font-size: 14px; }
@@ -241,7 +227,7 @@
 <body>
 
     <div id="game-wrapper">
-        <button id="sound-btn" onclick="toggleSound()">🔇</button>
+        <button id="sound-btn" onclick="toggleSound()">🔊</button>
         <div id="bgm-name"></div>
 
         <div id="menu-screen" class="screen">
@@ -314,7 +300,7 @@
         class SoundManager {
             constructor() {
                 this.ctx = null;
-                this.muted = true;
+                this.muted = false; // Default ON as requested
                 this.masterGain = null;
                 this.isPlayingBGM = false;
                 this.nextNoteTime = 0;
@@ -341,11 +327,12 @@
                     this.ctx = new AudioContext();
                     this.masterGain = this.ctx.createGain();
                     this.masterGain.connect(this.ctx.destination);
-                    this.masterGain.gain.value = 0.8; // Boost volume significantly
+                    this.masterGain.gain.value = 0.8; 
                     this.setupGlobalFX();
                 }
                 if (this.ctx.state === 'suspended') this.ctx.resume();
-                this.muted = false;
+                // Ensure muted state reflects the constructor default or user toggle
+                // this.muted is already false by default
                 this.updateBtn();
                 this.startBGM();
             }
@@ -560,6 +547,8 @@
 
         const soundManager = new SoundManager();
         function toggleSound() { soundManager.toggle(); }
+        // Attempt to unlock audio on first click
+        document.addEventListener('click', () => { if(soundManager.ctx && soundManager.ctx.state === 'suspended') soundManager.ctx.resume(); }, {once: true});
 
         // --- Game Constants & State ---
         // Base Archetypes (Default values)
@@ -802,13 +791,18 @@
         }
 
         class Enemy {
-            constructor(type, difficulty, path) {
+            constructor(type, difficulty, path, wave) {
                 this.path = path; this.pathIndex = 0;
                 this.x = path[0].x; this.y = path[0].y;
                 this.type = type; 
                 
-                const hpMult = Math.pow(1.25, difficulty - 1);
-                const rewardMult = Math.pow(1.12, difficulty - 1); 
+                // Difficulty Scaling Logic: Level base + Wave increment
+                // e.g., Level 1 Wave 5 is harder than Level 1 Wave 1
+                const levelPower = Math.pow(1.3, difficulty - 1); // 1.3^N scaling
+                const waveBonus = 1 + (wave * 0.1); // +10% per wave
+                const finalMult = levelPower * waveBonus;
+
+                const rewardMult = Math.pow(1.15, difficulty - 1); 
 
                 this.radius = 12; this.color = '#546e7a'; this.icon = '\u{1F482}';
                 this.baseHp = 40; this.speed = 1.8; this.baseReward = 8;
@@ -824,7 +818,7 @@
                 if (difficulty > 3 && type !== 'boss' && type !== 'general') { this.name = "精銳" + this.name; this.baseHp *= 1.4; this.baseReward *= 1.5; this.color = '#c2185b'; }
                 if (difficulty > 6 && type !== 'boss') { this.name = "神" + this.name; this.baseHp *= 1.8; this.baseReward *= 2.5; }
 
-                this.maxHp = Math.floor(this.baseHp * hpMult);
+                this.maxHp = Math.floor(this.baseHp * finalMult);
                 this.hp = this.maxHp;
                 this.reward = Math.floor(this.baseReward * rewardMult);
                 this.frozenTimer = 0; this.burnTimer = 0; this.stunTimer = 0;
@@ -907,6 +901,10 @@
                 this.type = stats.type; 
                 this.projSpeed = stats.speed; 
                 this.splashRadius = stats.splashRadius || 60; // specific for splash
+                
+                // Slow effect: start at 0.8 (20% slow), gets stronger (lower number)
+                this.slowFactor = 0.8; 
+                
                 this.cooldown = 0;
             }
             update() {
@@ -919,7 +917,8 @@
                 soundManager.playShoot();
                 gameState.projectiles.push({
                     x: this.x, y: this.y, target: target, damage: this.damage, color: this.color, type: this.type, speed: this.projSpeed,
-                    effect: this.effect, active: true, angle: Math.atan2(target.y - this.y, target.x - this.x), life: 30, splashRadius: this.splashRadius
+                    effect: this.effect, active: true, angle: Math.atan2(target.y - this.y, target.x - this.x), life: 30, splashRadius: this.splashRadius,
+                    slowFactor: this.slowFactor
                 });
             }
             draw() {
@@ -934,8 +933,16 @@
             upgrade() {
                 const cost = Math.floor(this.baseCost * 0.8);
                 if (gameState.gold >= cost) {
-                    gameState.gold -= cost; this.level++; this.damage = Math.floor(this.damage * 1.4);
-                    this.range = Math.floor(this.range * 1.1); this.baseCost += cost;
+                    gameState.gold -= cost; this.level++; 
+                    this.damage = Math.floor(this.damage * 1.4);
+                    this.range = Math.floor(this.range * 1.1); 
+                    this.baseCost += cost;
+                    
+                    // Strengthen slow effect (clamp at 0.4 aka 60% slow)
+                    if (this.effect === 'slow') {
+                        this.slowFactor = Math.max(0.4, this.slowFactor - 0.05);
+                    }
+                    
                     soundManager.playBuild();
                     createParticles(this.x, this.y, '#ffd700'); updateDetailPanel(); updateStatsUI();
                 }
@@ -979,6 +986,10 @@
         function updateDetailPanel() {
             const t = gameState.selectedPlacedTower; if (!t) return;
             const upgCost = Math.floor(t.baseCost * 0.8); const sellCost = Math.floor(t.baseCost * 0.6);
+            
+            const nextDmg = Math.floor(t.damage * 1.4);
+            const nextRange = Math.floor(t.range * 1.1);
+            
             const panel = document.getElementById('detail-panel');
             panel.innerHTML = `
                 <div class="detail-title"><span>${t.icon} ${t.name}</span><span>Lv.${t.level}</span></div>
@@ -986,7 +997,10 @@
                     <div class="detail-item"><span class="detail-label">傷害:</span><span class="detail-val">${t.damage}</span></div>
                     <div class="detail-item"><span class="detail-label">範圍:</span><span class="detail-val">${Math.floor(t.range)}</span></div>
                 </div>
-                <div class="detail-desc">已佈署的武將。</div>
+                <div class="upgrade-preview">
+                    晉升預覽: 傷害 ➤ ${nextDmg}, 範圍 ➤ ${nextRange}
+                    ${t.effect === 'slow' ? `<br>緩速效果增強 5%` : ''}
+                </div>
             `;
             document.getElementById('action-area').classList.remove('hidden');
             document.getElementById('cost-upg').textContent = `(${upgCost})`; document.getElementById('cost-sell').textContent = `(${sellCost})`;
@@ -1066,7 +1080,7 @@
                 if (gameState.spawnTimer > interval) {
                     if (gameState.enemiesToSpawn.length > 0) {
                         const randPath = gameState.allPaths[Math.floor(Math.random() * gameState.allPaths.length)];
-                        gameState.enemies.push(new Enemy(gameState.enemiesToSpawn.shift(), gameState.difficultyLevel, randPath));
+                        gameState.enemies.push(new Enemy(gameState.enemiesToSpawn.shift(), gameState.difficultyLevel, randPath, gameState.wave));
                         gameState.spawnTimer = 0;
                     } else { gameState.spawning = false; }
                 }
@@ -1097,7 +1111,13 @@
                         else targets.push(p.target);
                         targets.forEach(e => {
                             e.takeDamage(p.damage);
-                            if (p.effect === 'slow') e.frozenTimer = 90; if (p.effect === 'stun') e.stunTimer = 30; if (p.effect === 'burn') e.burnTimer = 120;
+                            if (p.effect === 'slow') {
+                                // Apply specific slow factor
+                                e.frozenTimer = 90; 
+                                e.slowFactor = p.slowFactor || 0.5; // Use passed slow factor
+                            }
+                            if (p.effect === 'stun') e.stunTimer = 30; 
+                            if (p.effect === 'burn') e.burnTimer = 120;
                         });
                         createParticles(p.target.x, p.target.y, p.color);
                     } else { p.x += (dx/dist)*p.speed; p.y += (dy/dist)*p.speed; }
