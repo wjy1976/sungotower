@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三國の演義：無限戰役 </title>
+    <title>三國の演義：無盡的戰役 </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
@@ -97,6 +97,20 @@
             border: 1px solid #ffb74d; color: white; border-radius: 4px;
         }
 
+        /* Tech/Shop Screen */
+        .tech-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+        .tech-card {
+            background: rgba(0,0,0,0.5); border: 2px solid #8d6e63; padding: 15px;
+            border-radius: 10px; width: 160px; text-align: center; cursor: pointer;
+            transition: 0.2s;
+        }
+        .tech-card:hover { border-color: #ffb74d; background: rgba(255,255,255,0.1); }
+        .tech-card.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        .tech-icon { font-size: 32px; margin-bottom: 10px; }
+        .tech-name { color: #ffb74d; font-weight: bold; margin-bottom: 5px; }
+        .tech-cost { color: #81c784; font-size: 12px; }
+        .tech-lvl { color: #ccc; font-size: 11px; margin-top: 5px; }
+
         /* Faction Cards (Enhanced) */
         .faction-select { display: flex; gap: 30px; margin-top: 30px; flex-wrap: wrap; justify-content: center; }
         .faction-card {
@@ -157,6 +171,30 @@
         .tower-name { font-size: 11px; font-weight: bold; }
         .tower-cost { font-size: 10px; color: #ffcc80; }
 
+        /* Action Buttons Enhanced */
+        #btn-upgrade {
+            background: linear-gradient(180deg, #66bb6a 0%, #2e7d32 100%);
+            border: 1px solid #81c784; color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            font-weight: bold; text-shadow: 1px 1px 2px black;
+            transition: all 0.1s;
+        }
+        #btn-upgrade:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
+        #btn-upgrade:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+        #btn-upgrade:disabled {
+            background: #424242; border-color: #616161; color: #bdbdbd;
+            box-shadow: none; cursor: not-allowed; text-shadow: none;
+        }
+
+        #btn-sell {
+            background: linear-gradient(180deg, #ef5350 0%, #c62828 100%);
+            border: 1px solid #e57373; color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            font-weight: bold; text-shadow: 1px 1px 2px black;
+        }
+        #btn-sell:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        #btn-sell:active { transform: translateY(1px); }
+
         /* PVP Specific UI */
         .tab-header { display: flex; margin-bottom: 8px; border-bottom: 1px solid #5d4037; }
         .tab-btn {
@@ -184,6 +222,13 @@
             background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px;
             z-index: 300; pointer-events: none; opacity: 0; transition: opacity 0.3s;
         }
+
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); color: white;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 500; font-size: 24px; pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -193,7 +238,7 @@
         <div id="splash-screen" class="screen">
             <h1 style="font-size: 42px; color: #ffb74d; text-shadow: 0 0 20px #000; margin-bottom: 10px;">三國：無限戰役</h1>
             <p style="color: #ccc; margin-bottom: 30px;">20首戰場名曲 · 單人戰役 · 多人對戰</p>
-            <button class="btn-large" onclick="window.App.initAudioAndEnter()">進入遊戲</button>
+            <button id="enter-game-btn" class="btn-large" disabled onclick="window.App.initAudioAndEnter()">連線中...</button>
         </div>
 
         <!-- 2. Mode Select Screen -->
@@ -202,7 +247,7 @@
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
                 <div class="mode-card" onclick="window.App.selectMode('single')">
                     <div class="mode-title">🏹 演義模式 (單人)</div>
-                    <div class="mode-desc">挑戰無限波次，守衛城池，解鎖武將。</div>
+                    <div class="mode-desc">挑戰無限波次，守衛城池。</div>
                 </div>
                 <div class="mode-card" onclick="window.App.selectMode('multi')">
                     <div class="mode-title">⚔️ 對戰模式 (多人)</div>
@@ -250,11 +295,45 @@
             <button class="btn-large" style="margin-top:30px; padding: 10px 30px; font-size: 16px; background: #5d4037;" onclick="window.App.showModeSelect()">返回</button>
         </div>
 
+        <!-- Tech/Shop Screen (New) -->
+        <div id="shop-screen" class="screen hidden" style="background: rgba(0,0,0,0.95); z-index: 120;">
+            <h2 style="color: #ffb74d; margin-bottom: 5px;">軍備整備</h2>
+            <p style="color:#aaa; font-size:14px; margin-bottom: 20px;">戰役勝利！使用庫銀強化全軍實力 (永久加成)</p>
+            <div style="font-size:24px; color:#ffd700; margin-bottom:20px;">現有庫銀: 💰<span id="shop-gold">0</span></div>
+            
+            <div class="tech-grid">
+                <div class="tech-card" onclick="window.SingleGame.buyTech('dmg')">
+                    <div class="tech-icon">⚔️</div>
+                    <div class="tech-name">兵器改良</div>
+                    <div class="tech-desc" style="font-size:11px; color:#ccc;">基礎攻擊力 +10%</div>
+                    <div class="tech-cost" id="cost-dmg">💰800</div>
+                    <div class="tech-lvl" id="lvl-dmg">Lv.0</div>
+                </div>
+                <div class="tech-card" onclick="window.SingleGame.buyTech('spd')">
+                    <div class="tech-icon">⚡</div>
+                    <div class="tech-name">輕裝急行</div>
+                    <div class="tech-desc" style="font-size:11px; color:#ccc;">攻擊速度 +10%</div>
+                    <div class="tech-cost" id="cost-spd">💰800</div>
+                    <div class="tech-lvl" id="lvl-spd">Lv.0</div>
+                </div>
+                <div class="tech-card" onclick="window.SingleGame.buyTech('rng')">
+                    <div class="tech-icon">🔭</div>
+                    <div class="tech-name">鷹眼訓練</div>
+                    <div class="tech-desc" style="font-size:11px; color:#ccc;">攻擊範圍 +10%</div>
+                    <div class="tech-cost" id="cost-rng">💰800</div>
+                    <div class="tech-lvl" id="lvl-rng">Lv.0</div>
+                </div>
+            </div>
+            
+            <button class="btn-large" style="margin-top:20px;" onclick="window.SingleGame.closeShop()">繼續征途 ▶️</button>
+        </div>
+
         <!-- 5. Waiting Screen (Multiplayer) -->
         <div id="waiting-screen" class="screen hidden">
             <div style="font-size: 40px; margin-bottom: 20px;">⏳</div>
             <h2>等待對手加入...</h2>
             <p id="room-id-display" style="color: #ffb74d;"></p>
+            <p style="font-size: 12px; color: #888;">請勿關閉視窗</p>
             <button class="btn-large" style="margin-top:20px; background:#5d4037; font-size:14px; padding:10px 20px;" onclick="location.reload()">取消並返回</button>
         </div>
 
@@ -275,6 +354,7 @@
         </div>
 
         <div id="toast" class="toast"></div>
+        <div id="loading-overlay" class="hidden">處理中...</div>
 
         <div class="canvas-container">
             <canvas id="game-canvas" width="880" height="600"></canvas>
@@ -283,7 +363,10 @@
         <aside id="ui-sidebar" class="hidden">
             <div class="header-info" style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 5px;">
                 <span id="faction-label" style="font-weight:bold;">陣營</span>
-                <button class="btn-small" onclick="window.App.quitGame()">🏠 回大廳</button>
+                <div style="display:flex; gap:5px;">
+                    <button id="pause-btn" class="btn-small hidden" onclick="window.SingleGame.togglePause()">⏸️ 暫停</button>
+                    <button class="btn-small" onclick="window.App.quitGame()">🏠 回大廳</button>
+                </div>
             </div>
 
             <div class="stats-panel">
@@ -305,8 +388,8 @@
                     <div id="detail-panel"><div style="text-align: center; color: #757575; padding: 20px;">選擇武將查看詳情</div></div>
                     <p class="upgrade-hint" id="hint-text" style="font-size: 10px; color: #ffcc80; text-align: center; opacity: 0.8;">💡 提示：點擊地圖武將進行晉升</p>
                     <div id="action-area" class="hidden" style="display: flex; gap: 8px; justify-content: center; margin-top: 5px;">
-                        <button id="btn-upgrade" class="tower-btn" style="min-height: 30px; width: 80px;" onclick="window.SingleGame.actionUpgrade()">晉升</button>
-                        <button id="btn-sell" class="tower-btn" style="min-height: 30px; width: 60px; background: #b71c1c;" onclick="window.SingleGame.actionSell()">撤退</button>
+                        <button id="btn-upgrade" class="tower-btn" style="min-height: 40px; width: 100px; border-radius: 8px;" onclick="window.SingleGame.actionUpgrade()">晉升</button>
+                        <button id="btn-sell" class="tower-btn" style="min-height: 40px; width: 60px; border-radius: 8px;" onclick="window.SingleGame.actionSell()">撤退</button>
                     </div>
                 </div>
 
@@ -329,7 +412,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const app = initializeApp(firebaseConfig);
@@ -338,14 +421,19 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
 
         // Make Firebase accessible globally for the Game Logic
-        window.FB = { db, auth, appId, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment };
+        window.FB = { db, auth, appId, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment, addDoc };
         
         // Auth Init
         const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Auth Failed:", e);
+                alert("伺服器連線失敗，請重新整理頁面。");
             }
         };
         initAuth();
@@ -353,6 +441,12 @@
             if(user) {
                 window.currentUser = user;
                 console.log("Logged in as", user.uid);
+                // Enable the Enter Game button once logged in
+                const btn = document.getElementById('enter-game-btn');
+                if(btn) {
+                    btn.textContent = "進入遊戲";
+                    btn.disabled = false;
+                }
                 if(window.Lobby) window.Lobby.init(); // Start listening for rooms
             }
         });
@@ -505,46 +599,57 @@
         const COLS = 22; 
         const ROWS = 15;
         
+        // Base Archetypes - Values are relative baselines
+        // DPS Target ~35-40 for basic units
         const ARCHETYPES = {
-            'archer': { type: 'single', range: 180, damage: 15, cooldown: 25, desc: '射程遠，攻速中等' },
-            'fast':   { type: 'single', range: 130, damage: 8, cooldown: 10, desc: '攻速極快，低傷害' },
-            'heavy':  { type: 'single', range: 120, damage: 60, cooldown: 55, desc: '攻擊高，攻速慢' },
-            'line':   { type: 'line', range: 150, damage: 12, cooldown: 40, desc: '直線貫穿多個敵人' },
-            'splash': { type: 'splash', range: 110, damage: 40, cooldown: 60, desc: '造成小範圍爆炸' },
-            'magic':  { type: 'magic', range: 160, damage: 20, cooldown: 50, desc: '範圍傷害並減速' }
+            'archer': { type: 'single', range: 180, damage: 15, cooldown: 25, desc: '射程遠，均衡型' }, // DPS: 36
+            'fast':   { type: 'single', range: 130, damage: 7, cooldown: 10, desc: '攻速極快，低傷害' }, // DPS: 42
+            'heavy':  { type: 'single', range: 120, damage: 50, cooldown: 80, desc: '單發高傷，攻速慢' }, // DPS: 37.5
+            'line':   { type: 'line', range: 150, damage: 25, cooldown: 45, desc: '直線貫穿多個敵人' },
+            'splash': { type: 'splash', range: 120, damage: 35, cooldown: 60, desc: '造成小範圍爆炸' },
+            'magic':  { type: 'magic', range: 160, damage: 15, cooldown: 40, desc: '範圍持續傷害/控場' }
         };
 
         const FACTIONS = {
-            'shu': { name: '蜀漢', color: '#2e7d32', bgColor: '#d7ccc8', mapPrefixes: ['劍閣', '漢中'], 
-                     pvpBonus: { hp: 1.4, speed: 0.9, dmg: 1.0, desc: '步兵體力強化' },
-                     generals: [
-                { name: '黃忠', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { range: 235, damage: 16, cooldown: 26 } },
-                { name: '趙雲', icon: '\u{26A1}', cost: 90, base: 'fast', stats: { cooldown: 9, damage: 9 } },
-                { name: '關羽', icon: '\u{1F5E1}', cost: 120, base: 'heavy', stats: { damage: 88, range: 125, cooldown: 55 } },
-                { name: '馬超', icon: '\u{1F40E}', cost: 140, base: 'line', stats: { damage: 16, cooldown: 38 } },
-                { name: '張飛', icon: '\u{1F4A5}', cost: 180, base: 'splash', stats: { range: 135, damage: 42, cooldown: 62 } },
-                { name: '孔明', icon: '\u{262F}', cost: 250, base: 'magic', effect: 'slow', stats: { cooldown: 42, range: 165 } }
-            ]},
-            'wei': { name: '曹魏', color: '#1565c0', bgColor: '#cfd8dc', mapPrefixes: ['許昌', '樊城'],
-                     pvpBonus: { hp: 1.0, speed: 1.4, dmg: 1.0, desc: '騎兵速度強化' },
-                     generals: [
-                { name: '夏侯淵', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { cooldown: 20, damage: 13, range: 170 } },
-                { name: '張遼', icon: '\u{2694}', cost: 90, base: 'fast', stats: { damage: 7, cooldown: 7 } },
-                { name: '夏侯惇', icon: '\u{1F441}', cost: 120, base: 'heavy', stats: { cooldown: 45, damage: 55, range: 115 } },
-                { name: '徐晃', icon: '\u{1FA93}', cost: 140, base: 'line', stats: { range: 165, cooldown: 32, damage: 10 } },
-                { name: '典韋', icon: '\u{1F4AA}', cost: 180, base: 'splash', stats: { damage: 45, cooldown: 50, range: 100 } },
-                { name: '司馬懿', icon: '\u{1F52E}', cost: 250, base: 'magic', effect: 'stun', stats: { damage: 25, cooldown: 45 } }
-            ]},
-            'wu': { name: '東吳', color: '#c62828', bgColor: '#b3e5fc', mapPrefixes: ['赤壁', '夷陵'],
-                    pvpBonus: { hp: 1.0, speed: 1.0, dmg: 1.3, desc: '弓兵攻擊強化' },
-                    generals: [
-                { name: '孫尚香', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { cooldown: 28, damage: 20, range: 175 } },
-                { name: '甘寧', icon: '\u{1F514}', cost: 90, base: 'fast', effect: 'burn', stats: { damage: 10, cooldown: 12 } },
-                { name: '太史慈', icon: '\u{1F6E1}', cost: 120, base: 'heavy', stats: { range: 130, damage: 65, cooldown: 60 } },
-                { name: '凌統', icon: '\u{1F531}', cost: 140, base: 'line', stats: { cooldown: 45, damage: 15, range: 145 } },
-                { name: '黃蓋', icon: '\u{1F4A3}', cost: 180, base: 'splash', stats: { damage: 35, range: 120, cooldown: 55 } },
-                { name: '周瑜', icon: '\u{1F525}', cost: 250, base: 'magic', effect: 'burn', stats: { damage: 50, cooldown: 55, range: 170 } }
-            ]}
+            'shu': { 
+                name: '蜀漢', color: '#2e7d32', bgColor: '#d7ccc8', mapPrefixes: ['劍閣', '漢中'], 
+                pvpBonus: { hp: 1.4, speed: 0.9, dmg: 1.0, desc: '步兵體力強化' },
+                generals: [
+                    // Shu: High Range, Average Speed
+                    { name: '黃忠', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { range: 240, damage: 16, cooldown: 26 } },
+                    { name: '趙雲', icon: '\u{26A1}', cost: 90, base: 'fast', stats: { range: 140, damage: 7, cooldown: 10 } },
+                    { name: '關羽', icon: '\u{1F5E1}', cost: 120, base: 'heavy', stats: { range: 130, damage: 60, cooldown: 90 } },
+                    { name: '馬超', icon: '\u{1F40E}', cost: 140, base: 'line', stats: { range: 170, damage: 30, cooldown: 50 } }, // Stronger pierce
+                    { name: '張飛', icon: '\u{1F4A5}', cost: 180, base: 'splash', stats: { range: 135, damage: 40, cooldown: 65 } },
+                    { name: '孔明', icon: '\u{262F}', cost: 250, base: 'magic', effect: 'slow', stats: { range: 180, damage: 10, cooldown: 45 } }
+                ]
+            },
+            'wei': { 
+                name: '曹魏', color: '#1565c0', bgColor: '#cfd8dc', mapPrefixes: ['許昌', '樊城'],
+                pvpBonus: { hp: 1.0, speed: 1.4, dmg: 1.0, desc: '騎兵速度強化' },
+                generals: [
+                    // Wei: High Speed, Low Dmg (Rapid Fire)
+                    { name: '夏侯淵', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { range: 160, damage: 10, cooldown: 16 } },
+                    { name: '張遼', icon: '\u{2694}', cost: 90, base: 'fast', stats: { range: 120, damage: 5, cooldown: 7 } },
+                    { name: '夏侯惇', icon: '\u{1F441}', cost: 120, base: 'heavy', stats: { range: 115, damage: 35, cooldown: 50 } },
+                    { name: '徐晃', icon: '\u{1FA93}', cost: 140, base: 'line', stats: { range: 155, damage: 18, cooldown: 35 } },
+                    { name: '典韋', icon: '\u{1F4AA}', cost: 180, base: 'splash', stats: { range: 110, damage: 25, cooldown: 40 } },
+                    { name: '司馬懿', icon: '\u{1F52E}', cost: 250, base: 'magic', effect: 'stun', stats: { range: 160, damage: 12, cooldown: 40 } }
+                ]
+            },
+            'wu': { 
+                name: '東吳', color: '#c62828', bgColor: '#b3e5fc', mapPrefixes: ['赤壁', '夷陵'],
+                pvpBonus: { hp: 1.0, speed: 1.0, dmg: 1.3, desc: '弓兵攻擊強化' },
+                generals: [
+                    // Wu: High Dmg, Low Speed (Heavy Hitter)
+                    { name: '孫尚香', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { range: 180, damage: 25, cooldown: 42 } },
+                    { name: '甘寧', icon: '\u{1F514}', cost: 90, base: 'fast', effect: 'burn', stats: { range: 130, damage: 12, cooldown: 18 } },
+                    { name: '太史慈', icon: '\u{1F6E1}', cost: 120, base: 'heavy', stats: { range: 125, damage: 80, cooldown: 120 } },
+                    { name: '凌統', icon: '\u{1F531}', cost: 140, base: 'line', stats: { range: 160, damage: 40, cooldown: 70 } },
+                    { name: '黃蓋', icon: '\u{1F4A3}', cost: 180, base: 'splash', stats: { range: 120, damage: 55, cooldown: 85 } },
+                    { name: '周瑜', icon: '\u{1F525}', cost: 250, base: 'magic', effect: 'firesea', stats: { range: 170, damage: 30, cooldown: 60 } }
+                ]
+            }
         };
 
         const PVP_UNITS = [
@@ -599,8 +704,14 @@
                 document.getElementById('ui-sidebar').classList.add('hidden');
                 document.getElementById('quit-btn-overlay').classList.add('hidden');
                 document.getElementById('end-screen').classList.add('hidden');
+                document.getElementById('shop-screen').classList.add('hidden'); // Ensure shop is closed
                 
                 this.showModeSelect();
+            },
+            showLoading: function(show) {
+                const el = document.getElementById('loading-overlay');
+                if(show) el.classList.remove('hidden');
+                else el.classList.add('hidden');
             },
             toast: function(msg) {
                 const el = document.getElementById('toast');
@@ -643,17 +754,22 @@
         // --- Single Player Logic ---
         const SingleGame = {
             state: {},
+            globalTech: { dmg: 0, spd: 0, rng: 0 }, // Global upgrades
             
             start: function(faction) {
                 this.state = {
                     faction: FACTIONS[faction],
                     gold: 150, lives: 20, wave: 0,
-                    towers: [], enemies: [], projectiles: [],
+                    towers: [], enemies: [], projectiles: [], hazards: [], // Hazards for Zhou Yu
                     active: false, spawning: false, gameOver: false,
                     path: [], decorations: [], spawnTimer: 0, spawnQueue: [],
-                    selectedType: null, selectedTower: null
+                    selectedType: null, selectedTower: null,
+                    paused: false
                 };
                 
+                // Reset tech on new game
+                this.globalTech = { dmg: 0, spd: 0, rng: 0 };
+
                 document.getElementById('ui-sidebar').classList.remove('hidden');
                 document.getElementById('quit-btn-overlay').classList.remove('hidden');
                 document.getElementById('defense-panel').classList.remove('hidden');
@@ -665,22 +781,87 @@
                 document.getElementById('faction-label').textContent = this.state.faction.name;
                 document.getElementById('faction-label').style.color = this.state.faction.color;
                 
+                // Show pause button in single player
+                const pBtn = document.getElementById('pause-btn');
+                pBtn.classList.remove('hidden');
+                pBtn.textContent = "⏸️ 暫停";
+                
                 window.UI.setupTowerGrid(faction);
-                this.generateMap();
+                this.generateMap(0); // Initial Difficulty 0
                 this.updateUI();
                 this.loop();
             },
-            generateMap: function() {
+            togglePause: function() {
+                this.state.paused = !this.state.paused;
+                const btn = document.getElementById('pause-btn');
+                btn.textContent = this.state.paused ? "▶️ 繼續" : "⏸️ 暫停";
+                if(this.state.paused) window.App.toast("戰術暫停 - 仍可佈署武將");
+            },
+            // Improved Procedural Path Generation (Zig-Zag)
+            generateMap: function(difficultyScale) {
                 window.soundManager.selectRandomTrack();
-                let path = [{x:0, y: Math.floor(Math.random()*(ROWS-4))+2}];
-                let cur = {...path[0]};
-                const mid = Math.floor(COLS/2);
-                const endY = Math.floor(Math.random()*(ROWS-4))+2;
                 
-                while(cur.x < mid) { cur.x++; path.push({...cur}); }
-                while(cur.y !== endY) { cur.y += (cur.y < endY ? 1 : -1); path.push({...cur}); }
-                while(cur.x < COLS-1) { cur.x++; path.push({...cur}); }
+                // Winding factor: High at start, low later
+                // difficultyScale = current wave count
+                const windingRatio = Math.max(0, 1 - (difficultyScale / 40)); 
                 
+                const path = [];
+                const startY = Math.floor(Math.random()*(ROWS-4))+2;
+                let cur = {x: 0, y: startY};
+                path.push({...cur});
+
+                const minSegmentW = 2;
+                const maxSegmentW = 4;
+                let nextX = 0;
+                
+                // Toggle for large zig-zag
+                let goUp = Math.random() > 0.5;
+
+                while (cur.x < COLS - 1) {
+                    // Determine next waypoint X
+                    const dist = Math.floor(Math.random() * (maxSegmentW - minSegmentW + 1)) + minSegmentW;
+                    nextX = Math.min(COLS - 1, cur.x + dist);
+                    
+                    // Determine next waypoint Y
+                    let targetY;
+                    
+                    if (Math.random() < windingRatio) {
+                        // High winding: go to extremes
+                        const margin = 2;
+                        if (goUp) {
+                            targetY = margin + Math.floor(Math.random() * 3); // Top area
+                        } else {
+                            targetY = ROWS - margin - 1 - Math.floor(Math.random() * 3); // Bottom area
+                        }
+                        goUp = !goUp; // Toggle direction for next segment
+                    } else {
+                        // Low winding: stay closer to current Y
+                        const delta = Math.floor(Math.random() * 5) - 2; // -2 to 2
+                        targetY = Math.max(2, Math.min(ROWS-3, cur.y + delta));
+                    }
+                    
+                    // Connection Logic: Step X -> Vertical Y -> Rest of X
+                    // This ensures no backtracking or in-place stalling
+                    
+                    // 1. Move X by 1 (if available) to clear previous corner
+                    if (cur.x < nextX) {
+                        cur.x++;
+                        path.push({...cur});
+                    }
+                    
+                    // 2. Move Y to target (Vertical segment)
+                    while (cur.y !== targetY) {
+                        cur.y += (cur.y < targetY) ? 1 : -1;
+                        path.push({...cur});
+                    }
+                    
+                    // 3. Move X to nextX (Horizontal segment)
+                    while (cur.x < nextX) {
+                        cur.x++;
+                        path.push({...cur});
+                    }
+                }
+
                 this.state.path = path.map(p => ({x: p.x*GRID_SIZE+20, y: p.y*GRID_SIZE+20}));
                 this.state.gridPath = new Set(path.map(p => `${p.x},${p.y}`));
 
@@ -707,15 +888,57 @@
                 this.updateUI();
             },
             nextLevel: function() {
-                window.App.toast(`第 ${this.state.wave} 波攻勢瓦解！全軍遷徙！`);
-                // Refund towers
+                // Open Shop instead of direct next level
+                this.openShop();
+            },
+            openShop: function() {
+                this.state.paused = true; // Pause game logic
+                document.getElementById('shop-screen').classList.remove('hidden');
+                this.updateShopUI();
+            },
+            closeShop: function() {
+                document.getElementById('shop-screen').classList.add('hidden');
+                this.state.paused = false;
+                
+                window.App.toast(`全軍遷徙！第 ${this.state.wave} 波攻勢瓦解`);
+                
+                // Refund mechanics
                 this.state.towers.forEach(t => {
                     this.state.gold += t.totalCost;
                 });
                 this.state.towers = [];
                 this.state.projectiles = [];
-                this.generateMap();
-                window.soundManager.playWin(); // Fanfare
+                this.state.hazards = [];
+                
+                this.generateMap(this.state.wave); // Pass wave for difficulty scaling
+                window.soundManager.playWin();
+                this.updateUI();
+            },
+            updateShopUI: function() {
+                document.getElementById('shop-gold').textContent = Math.floor(this.state.gold);
+                
+                const costCalc = (lvl) => Math.floor(100 * Math.pow(1.5, lvl));
+                
+                const types = ['dmg', 'spd', 'rng'];
+                types.forEach(t => {
+                    const cost = costCalc(this.globalTech[t]);
+                    document.getElementById(`cost-${t}`).textContent = `💰${cost}`;
+                    document.getElementById(`lvl-${t}`).textContent = `Lv.${this.globalTech[t]}`;
+                    
+                    const card = document.getElementById(`cost-${t}`).parentElement;
+                    if(this.state.gold < cost) card.classList.add('disabled');
+                    else card.classList.remove('disabled');
+                });
+            },
+            buyTech: function(type) {
+                const cost = Math.floor(100 * Math.pow(1.5, this.globalTech[type]));
+                if(this.state.gold >= cost) {
+                    this.state.gold -= cost;
+                    this.globalTech[type]++;
+                    window.soundManager.playBuild();
+                    this.updateShopUI();
+                    this.updateUI(); // Update gold in HUD
+                }
             },
             selectTower: function(idx) {
                 this.state.selectedType = idx; this.state.selectedTower = null;
@@ -735,7 +958,8 @@
                     const g = this.state.faction.generals[this.state.selectedType];
                     if(this.state.gold >= g.cost && !this.state.gridPath.has(`${c},${r}`)) {
                         this.state.gold -= g.cost;
-                        this.state.towers.push(new Tower(c, r, g, this.state.faction.color));
+                        // Pass global tech to new tower
+                        this.state.towers.push(new Tower(c, r, g, this.state.faction.color, this.globalTech));
                         window.soundManager.playBuild();
                         this.updateUI();
                     }
@@ -770,21 +994,49 @@
                     const g = this.state.faction.generals[obj];
                     const arch = ARCHETYPES[g.base];
                     const stats = {...arch, ...(g.stats||{})};
-                    const atkSpd = (60 / stats.cooldown).toFixed(1);
+                    // Apply global tech preview
+                    const baseDmg = Math.floor(stats.damage * (1 + this.globalTech.dmg * 0.1));
+                    const baseRng = Math.floor(stats.range * (1 + this.globalTech.rng * 0.1));
+                    // Cooldown calc: lower is faster
+                    const baseCd = stats.cooldown / (1 + this.globalTech.spd * 0.1);
+                    const atkSpd = (60 / baseCd).toFixed(1);
 
                     p.innerHTML = `<div style="color:#ffb74d;font-weight:bold;border-bottom:1px solid #555;padding-bottom:5px;">${g.icon} ${g.name}</div>
-                    <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;"><span>⚔️ 攻擊: ${stats.damage}</span><span>🎯 射程: ${stats.range}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;"><span>⚔️ 攻擊: ${baseDmg}</span><span>🎯 射程: ${baseRng}</span></div>
                     <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:11px;"><span>⚡ 攻速: ${atkSpd}/秒</span></div>
                     <div style="font-size:10px;margin-top:5px;color:#aaa;">${arch.desc}</div>`;
                     document.getElementById('action-area').classList.add('hidden');
                 } else {
                     const atkSpd = (60 / obj.cdM).toFixed(1);
+                    
+                    // Predict next stats
+                    const nextDmg = Math.floor(obj.dmg * 1.4);
+                    const nextRng = Math.floor(obj.rng * 1.1);
+                    const nextCd = obj.cdM * 0.9;
+                    const nextSpd = (60/nextCd).toFixed(1);
+
                     p.innerHTML = `<div style="color:#ffb74d;font-weight:bold;border-bottom:1px solid #555;padding-bottom:5px;">${obj.icon} ${obj.name} Lv.${obj.level}</div>
-                    <div style="display:flex;justify-content:space-between;margin-top:5px;"><span>⚔️ 攻擊: ${obj.dmg}</span><span>🎯 射程: ${obj.rng}</span></div>
-                    <div style="margin-top:2px;"><span>⚡ 攻速: ${atkSpd}/秒</span></div>
-                    <div style="font-size:10px;margin-top:5px;color:#81c784;">升級花費: 💰${obj.upgradeCost}</div>`;
+                    <div style="display:flex;justify-content:space-between;margin-top:8px; background:rgba(0,0,0,0.2); padding:4px; border-radius:4px;">
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                            <span style="font-size:10px; color:#aaa;">攻擊</span>
+                            <span>${obj.dmg} <span style="color:#69f0ae; font-weight:bold;">➜ ${nextDmg}</span></span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                            <span style="font-size:10px; color:#aaa;">射程</span>
+                            <span>${obj.rng} <span style="color:#69f0ae; font-weight:bold;">➜ ${nextRng}</span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top:5px; font-size:11px; text-align:center;">
+                        <span>⚡ 攻速: ${atkSpd} <span style="color:#69f0ae; font-weight:bold;">➜ ${nextSpd}</span></span>
+                    </div>
+                    <div style="font-size:12px;margin-top:5px;color:#ffb74d;text-align:center; font-weight:bold;">費用: 💰${obj.upgradeCost}</div>`;
+                    
                     document.getElementById('action-area').classList.remove('hidden');
-                    document.getElementById('btn-upgrade').disabled = this.state.gold < obj.upgradeCost;
+                    const upBtn = document.getElementById('btn-upgrade');
+                    const affordable = this.state.gold >= obj.upgradeCost;
+                    
+                    upBtn.disabled = !affordable;
+                    upBtn.innerHTML = affordable ? `⬆️ 晉升<br><span style="font-size:10px">Lv.${obj.level+1}</span>` : `庫銀不足<br><span style="font-size:10px">缺 ${obj.upgradeCost - this.state.gold}</span>`;
                 }
             },
             updateUI: function() {
@@ -792,7 +1044,19 @@
                 document.getElementById('stat-2-val').textContent = this.state.lives;
                 document.getElementById('stat-3-val').textContent = this.state.gold;
                 const btn = document.getElementById('start-btn');
-                btn.textContent = this.state.active ? "進攻中..." : "下一波";
+                
+                if (this.state.active) {
+                    btn.textContent = "進攻中...";
+                    btn.style.color = "";
+                } else {
+                    if ((this.state.wave + 1) % 10 === 0) {
+                        btn.textContent = "⚠️ BOSS來襲!";
+                        btn.style.color = "#ff5252";
+                    } else {
+                        btn.textContent = "下一波";
+                        btn.style.color = "";
+                    }
+                }
                 btn.disabled = this.state.active;
                 
                 const towerBtns = document.querySelectorAll('#tower-grid .tower-btn');
@@ -806,38 +1070,48 @@
             loop: function() {
                 if(gameMode !== 'single' || this.state.gameOver) return;
                 
-                if(this.state.spawning) {
-                    this.state.spawnTimer++;
-                    if(this.state.spawnTimer > 40 && this.state.spawnQueue.length > 0) {
-                        const type = this.state.spawnQueue.shift();
-                        this.state.enemies.push(new Entity(type, this.state.path, this.state.wave, false));
-                        this.state.spawnTimer = 0;
-                    } else if(this.state.spawnQueue.length === 0) this.state.spawning = false;
-                }
-                
-                this.state.enemies.forEach(e => e.update());
-                this.state.enemies = this.state.enemies.filter(e => e.hp > 0 && !e.finished);
-                if(this.state.active && !this.state.spawning && this.state.enemies.length === 0) {
-                    this.state.active = false;
-                    this.state.gold += 50 + this.state.wave*10;
-                    window.soundManager.playWin();
-                    
-                    // Check for Level Change (every 10 waves)
-                    if (this.state.wave % 10 === 0) {
-                        this.nextLevel();
+                if(!this.state.paused) {
+                    if(this.state.spawning) {
+                        this.state.spawnTimer++;
+                        if(this.state.spawnTimer > 40 && this.state.spawnQueue.length > 0) {
+                            const type = this.state.spawnQueue.shift();
+                            this.state.enemies.push(new Entity(type, this.state.path, this.state.wave, false));
+                            this.state.spawnTimer = 0;
+                        } else if(this.state.spawnQueue.length === 0) this.state.spawning = false;
                     }
-                    this.updateUI();
+                    
+                    // Update Enemies
+                    this.state.enemies.forEach(e => e.update());
+                    this.state.enemies = this.state.enemies.filter(e => e.hp > 0 && !e.finished);
+                    
+                    // Update Hazards (Zhou Yu)
+                    this.state.hazards = this.state.hazards.filter(h => h.active);
+                    this.state.hazards.forEach(h => h.update(this.state.enemies));
+
+                    if(this.state.active && !this.state.spawning && this.state.enemies.length === 0) {
+                        this.state.active = false;
+                        this.state.gold += 50 + this.state.wave*10;
+                        window.soundManager.playWin();
+                        
+                        if (this.state.wave % 10 === 0) {
+                            this.nextLevel();
+                        }
+                        this.updateUI();
+                    }
+
+                    this.state.towers.forEach(t => t.update(this.state.enemies, this.state.projectiles, this.state.hazards));
+                    this.state.projectiles.forEach(p => p.update());
+                    this.state.projectiles = this.state.projectiles.filter(p => p.active);
                 }
 
-                this.state.towers.forEach(t => t.update(this.state.enemies, this.state.projectiles));
-                this.state.projectiles.forEach(p => p.update());
-                this.state.projectiles = this.state.projectiles.filter(p => p.active);
-
+                // --- Drawing ---
                 ctx.fillStyle = this.state.faction.bgColor;
                 ctx.fillRect(0,0,canvas.width,canvas.height);
                 
                 ctx.font = '20px Arial'; ctx.textAlign='center';
                 this.state.decorations.forEach(d => ctx.fillText(d.icon, d.x, d.y));
+
+                this.state.hazards.forEach(h => h.draw());
 
                 ctx.lineWidth = 30; ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(0,0,0,0.1)';
                 ctx.beginPath();
@@ -855,7 +1129,7 @@
                     const g = this.state.faction.generals[this.state.selectedType];
                     const base = ARCHETYPES[g.base];
                     const stats = {...base, ...(g.stats||{})};
-                    const range = stats.range;
+                    const range = Math.floor(stats.range * (1 + this.globalTech.rng * 0.1));
                     const cx = Math.floor(mousePos.x/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
                     const cy = Math.floor(mousePos.y/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
 
@@ -880,6 +1154,22 @@
                     ctx.fillStyle = 'rgba(255,255,255,0.1)';
                     ctx.arc(this.state.selectedTower.x, this.state.selectedTower.y, this.state.selectedTower.rng, 0, Math.PI*2);
                     ctx.fill(); ctx.stroke();
+                }
+
+                if(this.state.paused && !document.getElementById('shop-screen').classList.contains('hidden')) {
+                    // Don't draw pause overlay if shop is open, just dim
+                } else if(this.state.paused) {
+                    ctx.save();
+                    ctx.fillStyle = "rgba(0,0,0,0.3)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "#fff";
+                    ctx.font = "bold 32px 'Noto Serif TC'";
+                    ctx.textAlign = "center";
+                    ctx.shadowColor = "black"; ctx.shadowBlur = 4;
+                    ctx.fillText("戰術暫停", canvas.width/2, canvas.height/2 - 10);
+                    ctx.font = "16px 'Noto Serif TC'";
+                    ctx.fillText("請佈署防禦或升級武將", canvas.width/2, canvas.height/2 + 20);
+                    ctx.restore();
                 }
 
                 requestAnimationFrame(() => this.loop());
@@ -921,7 +1211,8 @@
                 document.getElementById('quit-btn-overlay').classList.remove('hidden');
                 document.getElementById('start-btn').classList.add('hidden'); 
                 document.getElementById('pvp-tabs').classList.remove('hidden');
-                
+                document.getElementById('pause-btn').classList.add('hidden');
+
                 document.getElementById('stat-1-lbl').textContent = "我軍";
                 document.getElementById('stat-2-lbl').textContent = "敵軍";
                 document.getElementById('faction-label').textContent = `${myF.name} VS ${enF.name}`;
@@ -934,6 +1225,7 @@
                 this.loop();
             },
             generateMap: function(seed) {
+                // Fixed PVP Map logic
                 const path = [];
                 const start = {x: 2, y: 7};
                 const end = {x: 19, y: 7}; 
@@ -956,7 +1248,6 @@
                 connect(path[path.length-1], end);
                 
                 const gridPath = new Set(path.map(p => `${p.x},${p.y}`));
-                
                 const decorations = [];
                 const decorTypes = ['🌲','🌿','🪨','⛰️'];
                 for(let c=0; c<COLS; c++) {
@@ -972,7 +1263,8 @@
                     path: path.map(p => ({x: p.x*GRID_SIZE+20, y: p.y*GRID_SIZE+20})),
                     gridPath: gridPath,
                     myZone: 10, 
-                    decorations: decorations
+                    decorations: decorations,
+                    name: "決戰之地"
                 };
             },
             startSync: function() {
@@ -1054,9 +1346,11 @@
                 
                 if(this.state.selectedType !== null) {
                      const g = this.state.myFactionData.generals[this.state.selectedType];
+                     // Use blank tech for multiplayer for fairness
+                     const blankTech = {dmg:0, spd:0, rng:0}; 
                      if(this.state.gold >= g.cost && !this.state.map.gridPath.has(`${c},${r}`)) {
                          this.state.gold -= g.cost;
-                         this.state.towers.push(new Tower(c, r, g, this.state.myFactionData.color));
+                         this.state.towers.push(new Tower(c, r, g, this.state.myFactionData.color, blankTech));
                          window.soundManager.playBuild();
                          this.updateUI();
                      } else if (this.state.gold < g.cost) window.App.toast("庫銀不足");
@@ -1089,7 +1383,7 @@
                 this.state.myUnits = this.state.myUnits.filter(u => !u.finished && u.hp > 0);
                 this.state.enemyUnits = this.state.enemyUnits.filter(u => !u.finished && u.hp > 0);
                 
-                this.state.towers.forEach(t => t.update(this.state.enemyUnits, this.state.projectiles));
+                this.state.towers.forEach(t => t.update(this.state.enemyUnits, this.state.projectiles, [])); // No hazards in PVP yet
                 this.state.projectiles.forEach(p => p.update());
                 this.state.projectiles = this.state.projectiles.filter(p => p.active);
                 
@@ -1117,7 +1411,7 @@
                 ctx.font = '30px Arial'; 
                 ctx.fillText('🏰', startP.x, startP.y+10);
                 ctx.fillText('🏰', endP.x, endP.y+10);
-
+                
                 this.state.towers.forEach(t => t.draw());
                 this.state.myUnits.forEach(u => u.draw());
                 this.state.enemyUnits.forEach(u => u.draw());
@@ -1173,8 +1467,10 @@
                 this.finished = false; this.isMine = isMine;
                 
                 if (type !== 'pvp_unit') {
-                    let mult = Math.pow(1.3, wave);
-                    if (wave <= 5) mult *= 0.4; // Beginner friendly: 40% HP for first 5 waves
+                    // Difficulty: 1.1x per wave
+                    let mult = Math.pow(1.1, wave);
+                    if (wave <= 5) mult *= 0.6; // Early game ease
+                    
                     this.baseHp = type==='boss'?900:type==='soldier'?45:20;
                     this.maxHp = Math.floor(this.baseHp * mult);
                     this.hp = this.maxHp;
@@ -1183,7 +1479,7 @@
                     this.reward = type==='boss'?350:15;
                     this.mode = 'single';
                 }
-                this.froz = 0; this.burn = 0; this.slowF = 1;
+                this.froz = 0; this.burn = 0; this.stun = 0;
             }
             overridePVP(def, startIdx, endIdx, color, stats) {
                 this.mode = 'pvp';
@@ -1201,6 +1497,8 @@
                 this.y = this.path[this.idx].y;
             }
             update() {
+                if (this.stun > 0) { this.stun--; return; } // Stunned logic
+                
                 let s = this.speed * (this.froz > 0 ? 0.5 : 1);
                 if(this.burn > 0) { this.hp -= 0.5; this.burn--; }
                 if(this.froz > 0) this.froz--;
@@ -1247,7 +1545,7 @@
                         document.getElementById('end-title').textContent = "城池失守";
                         document.getElementById('end-desc').textContent = "敗軍之將，不可言勇";
                     } else {
-                        // Loop logic: Reset position to start, keep current HP
+                        // Loop back logic
                         this.idx = 0;
                         this.x = this.path[0].x;
                         this.y = this.path[0].y;
@@ -1273,6 +1571,14 @@
             draw() {
                 ctx.save();
                 ctx.translate(this.x, this.y);
+                
+                // Status effects
+                if (this.froz > 0) ctx.fillStyle = 'rgba(100, 200, 255, 0.5)';
+                else if (this.burn > 0) ctx.fillStyle = 'rgba(255, 100, 0, 0.5)';
+                else if (this.stun > 0) ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                else ctx.fillStyle = 'transparent';
+                ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.fill();
+
                 ctx.fillStyle = '#333'; ctx.fillRect(-12, -20, 24, 4);
                 ctx.fillStyle = this.isMine ? '#4caf50' : (this.mode==='single'?'lime':'#f44336'); 
                 ctx.fillRect(-12, -20, 24*(Math.max(0,this.hp)/this.maxHp), 4);
@@ -1284,55 +1590,136 @@
             }
         }
 
+        class Hazard {
+            constructor(x, y, duration, damage) {
+                this.x = x; this.y = y; this.duration = duration; this.damage = damage;
+                this.active = true;
+                this.range = 40;
+            }
+            update(enemies) {
+                this.duration--;
+                if(this.duration <= 0) this.active = false;
+                if(this.duration % 10 === 0) { // Damage tick every 10 frames
+                    enemies.forEach(e => {
+                        if(Math.hypot(e.x - this.x, e.y - this.y) < this.range) {
+                            e.takeDamage(this.damage);
+                            e.burn = 20; // Re-apply burn
+                        }
+                    });
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = 0.4 + (Math.sin(Date.now() / 100) * 0.1);
+                ctx.fillStyle = '#e65100'; // Fire orange
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.range, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#ffeb3b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
         class Tower {
-            constructor(c, r, g, color) {
+            constructor(c, r, g, color, globalTech) {
                 this.c=c; this.r=r; this.x=c*40+20; this.y=r*40+20;
                 this.name=g.name; this.icon=g.icon; this.color=color; this.level=1;
                 this.totalCost = g.cost; this.upgradeCost = Math.floor(g.cost*0.8);
                 
                 const base = ARCHETYPES[g.base];
                 const stats = {...base, ...(g.stats||{})};
-                this.dmg=stats.damage; this.rng=stats.range; this.cdM=stats.cooldown;
+                
+                // Apply Global Tech (Base modifiers)
+                this.dmg = Math.floor(stats.damage * (1 + globalTech.dmg * 0.1));
+                this.rng = Math.floor(stats.range * (1 + globalTech.rng * 0.1));
+                // Speed: stored as Cooldown frames. Lower is faster. Tech +10% speed = /1.1
+                this.cdM = Math.max(5, stats.cooldown / (1 + globalTech.spd * 0.1));
+                
                 this.type=stats.type; this.eff=g.effect||stats.effect; 
                 this.cd=0;
             }
             upgrade() {
-                this.level++; this.dmg=Math.floor(this.dmg*1.4); this.rng=Math.floor(this.rng*1.1);
+                this.level++; 
+                this.dmg = Math.floor(this.dmg*1.4); 
+                this.rng = Math.floor(this.rng*1.1);
+                this.cdM = Math.max(5, this.cdM * 0.9); // Upgrade Speed by ~10%
                 this.totalCost += this.upgradeCost; this.upgradeCost = Math.floor(this.totalCost*0.6);
             }
-            update(enemies, projectiles) {
+            update(enemies, projectiles, hazards) {
                 if(this.cd > 0) this.cd--;
                 const target = enemies.find(e => Math.hypot(e.x-this.x, e.y-this.y) <= this.rng);
                 if(target && this.cd <= 0) {
                     window.soundManager.playShoot();
-                    projectiles.push({
-                        x:this.x, y:this.y, target:target, dmg:this.dmg, color:this.color,
-                        type:this.type, eff:this.eff, active:true,
-                        update: function() {
-                            if(!this.target || this.target.hp<=0) { this.active=false; return; }
-                            const dx = this.target.x-this.x; const dy = this.target.y-this.y;
-                            const d = Math.hypot(dx,dy);
-                            if(d < 12) {
-                                this.active=false;
-                                if(this.type === 'splash' || this.type === 'magic') {
-                                    enemies.forEach(e => {
-                                        if(Math.hypot(e.x-this.target.x, e.y-this.target.y) < 60) this.hit(e);
-                                    });
-                                } else this.hit(this.target);
-                            } else {
-                                this.x += (dx/d)*15; this.y += (dy/d)*15;
+                    
+                    if (this.type === 'line') {
+                        // Improved Pierce Projectile logic
+                        const dx = target.x - this.x; const dy = target.y - this.y;
+                        const d = Math.hypot(dx, dy);
+                        const vx = (dx/d) * 15; const vy = (dy/d) * 15;
+                        projectiles.push({
+                            x:this.x, y:this.y, vx:vx, vy:vy, dmg:this.dmg, color:this.color, type:'line',
+                            life: 40, hitList: new Set(), width: 10 + (this.level * 5), // Wider with level
+                            update: function() {
+                                this.x += this.vx; this.y += this.vy; this.life--;
+                                if(this.life <= 0 || this.x<0 || this.x>canvas.width || this.y<0 || this.y>canvas.height) this.active=false;
+                                // Improved Hit detection with larger hitbox
+                                enemies.forEach(e => {
+                                    if (!this.hitList.has(e) && Math.hypot(e.x-this.x, e.y-this.y) < 35) { // Increased hit range
+                                        e.takeDamage(this.dmg);
+                                        this.hitList.add(e);
+                                    }
+                                });
+                            },
+                            draw: function() {
+                                ctx.save();
+                                ctx.translate(this.x, this.y);
+                                ctx.rotate(Math.atan2(this.vy, this.vx));
+                                // Visual: Bright beam
+                                ctx.fillStyle = '#fff'; ctx.fillRect(-20, -this.width/2, 40, this.width); 
+                                ctx.fillStyle = this.color; ctx.globalAlpha=0.5; ctx.fillRect(-25, -this.width, 50, this.width*2);
+                                ctx.restore();
+                            },
+                            active: true
+                        });
+                    } else {
+                        // Homing Projectile
+                        projectiles.push({
+                            x:this.x, y:this.y, target:target, dmg:this.dmg, color:this.color,
+                            type:this.type, eff:this.eff, active:true, lvl: this.level,
+                            update: function() {
+                                if(!this.target || this.target.hp<=0) { this.active=false; return; }
+                                const dx = this.target.x-this.x; const dy = this.target.y-this.y;
+                                const d = Math.hypot(dx,dy);
+                                if(d < 12) {
+                                    this.active=false;
+                                    if(this.type === 'splash' || this.type === 'magic') {
+                                        // AoE Hit
+                                        enemies.forEach(e => {
+                                            if(Math.hypot(e.x-this.target.x, e.y-this.target.y) < 60) this.hit(e);
+                                        });
+                                    } else {
+                                        this.hit(this.target);
+                                    }
+                                    
+                                    // Zhou Yu Fire Sea Trigger
+                                    if (this.eff === 'firesea') {
+                                        hazards.push(new Hazard(this.target.x, this.target.y, 60 + (this.lvl*20), Math.floor(this.dmg/5)));
+                                    }
+                                } else {
+                                    this.x += (dx/d)*15; this.y += (dy/d)*15;
+                                }
+                            },
+                            hit: function(e) {
+                                e.takeDamage(this.dmg);
+                                if(this.eff === 'slow') e.froz = 40 + (this.lvl * 20); // Upgrade increases slow duration
+                                if(this.eff === 'burn') e.burn = 80 + (this.lvl * 20);
+                                if(this.eff === 'stun' && Math.random() > 0.6) e.stun = 20 + (this.lvl * 10);
+                            },
+                            draw: function() {
+                                ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x,this.y,4,0,7); ctx.fill();
                             }
-                        },
-                        hit: function(e) {
-                            e.takeDamage(this.dmg);
-                            if(this.eff === 'slow') e.froz = 60;
-                            if(this.eff === 'burn') e.burn = 100;
-                            if(this.eff === 'stun' && Math.random()>0.7) e.froz = 30;
-                        },
-                        draw: function() {
-                            ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x,this.y,4,0,7); ctx.fill();
-                        }
-                    });
+                        });
+                    }
                     this.cd = this.cdM;
                 }
             }
@@ -1367,45 +1754,70 @@
                 });
             },
             createRoom: async () => {
-                if(!window.FB) return;
+                if(!window.FB) { alert("系統載入中，請稍候..."); return; }
+                if(!window.currentUser) { alert("尚未連線到伺服器，請重新整理頁面。"); return; }
+                
                 const name = document.getElementById('room-name-input').value.trim() || `Battle ${Math.floor(Math.random()*100)}`;
                 document.getElementById('lobby-screen').classList.add('hidden');
                 document.getElementById('menu-screen').classList.remove('hidden');
                 
+                // Override selectFaction for room creation context
                 window.MultiGame.selectFaction = async (faction) => {
-                    const roomRef = window.FB.doc(window.FB.collection(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles'));
-                    const mapSeed = Math.random() * 100;
-                    await window.FB.setDoc(roomRef, {
-                        name, status: 'waiting', host: window.currentUser.uid, hostFaction: faction,
-                        mapSeed, createdAt: Date.now(),
-                        hostHp: 50, guestHp: 50, hostUnits: 0, guestUnits: 0
-                    });
-                    
-                    document.getElementById('menu-screen').classList.add('hidden');
-                    document.getElementById('waiting-screen').classList.remove('hidden');
-                    document.getElementById('room-id-display').textContent = "房號: " + roomRef.id.substring(0,5);
-                    
-                    const unsub = window.FB.onSnapshot(roomRef, (snap) => {
-                        const d = snap.data();
-                        if(d && d.guest) {
-                            unsub();
-                            window.MultiGame.start(mapSeed, true, roomRef.id, d.guestFaction);
-                        }
-                    });
+                    try {
+                        window.App.showLoading(true);
+                        // FIXED: Use addDoc instead of doc(collection) for cleaner creation
+                        const collectionRef = window.FB.collection(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles');
+                        const mapSeed = Math.random() * 100;
+                        
+                        const roomRef = await window.FB.addDoc(collectionRef, {
+                            name, status: 'waiting', host: window.currentUser.uid, hostFaction: faction,
+                            mapSeed, createdAt: Date.now(),
+                            hostHp: 50, guestHp: 50, hostUnits: 0, guestUnits: 0
+                        });
+                        
+                        document.getElementById('menu-screen').classList.add('hidden');
+                        document.getElementById('waiting-screen').classList.remove('hidden');
+                        document.getElementById('room-id-display').textContent = "房號: " + roomRef.id.substring(0,5);
+                        window.App.showLoading(false);
+                        
+                        const unsub = window.FB.onSnapshot(roomRef, (snap) => {
+                            const d = snap.data();
+                            if(d && d.guest) {
+                                unsub();
+                                window.MultiGame.start(mapSeed, true, roomRef.id, d.guestFaction);
+                            }
+                        });
+                    } catch (e) {
+                        console.error(e);
+                        window.App.showLoading(false);
+                        alert("建立戰場失敗，請稍後再試。");
+                        window.App.showModeSelect();
+                    }
                 };
             },
             joinRoom: async (room) => {
                 if(!window.FB) return;
+                if(!window.currentUser) { alert("尚未連線到伺服器"); return; }
+
                 document.getElementById('lobby-screen').classList.add('hidden');
                 document.getElementById('menu-screen').classList.remove('hidden');
                 
                 window.MultiGame.selectFaction = async (faction) => {
-                    const roomRef = window.FB.doc(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles', room.id);
-                    await window.FB.updateDoc(roomRef, {
-                        guest: window.currentUser.uid, guestFaction: faction, status: 'playing', startTime: Date.now()
-                    });
-                    document.getElementById('menu-screen').classList.add('hidden');
-                    window.MultiGame.start(room.mapSeed, false, room.id, room.hostFaction);
+                    try {
+                        window.App.showLoading(true);
+                        const roomRef = window.FB.doc(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles', room.id);
+                        await window.FB.updateDoc(roomRef, {
+                            guest: window.currentUser.uid, guestFaction: faction, status: 'playing', startTime: Date.now()
+                        });
+                        window.App.showLoading(false);
+                        document.getElementById('menu-screen').classList.add('hidden');
+                        window.MultiGame.start(room.mapSeed, false, room.id, room.hostFaction);
+                    } catch (e) {
+                        console.error(e);
+                        window.App.showLoading(false);
+                        alert("加入戰場失敗，可能房間已關閉或人滿。");
+                        window.App.showModeSelect();
+                    }
                 };
             }
         };
