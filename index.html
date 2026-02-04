@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+﻿!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三國の演義：無限戰役 </title>
+    <title>三國の演義：無限戰役</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
@@ -22,7 +22,7 @@
         body {
             margin: 0; padding: 0;
             background-color: #1a100e;
-            font-family: 'Noto Serif TC', serif, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            font-family: 'Noto Serif TC', serif, sans-serif;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; width: 100vw; overflow: hidden;
             color: #333; user-select: none; -webkit-user-select: none;
@@ -46,37 +46,99 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             color: white; transition: opacity 0.3s; padding: 20px; text-align: center;
         }
-        .hidden { display: none !important; opacity: 0; }
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
 
         #splash-screen { background: radial-gradient(circle, #3e2723 0%, #1a100e 100%); z-index: 110; }
-        .enter-btn {
-            background: var(--accent-color); border: 2px solid #ffb74d; color: white;
-            padding: 20px 50px; font-size: 28px; font-family: inherit; font-weight: bold;
-            border-radius: 50px; cursor: pointer; box-shadow: 0 0 20px var(--accent-color);
-            transition: all 0.3s; margin-top: 30px;
-        }
-        .enter-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px var(--accent-color); }
-
-        .faction-select { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; justify-content: center; overflow-y: auto; }
-        .faction-card {
-            width: 160px; height: 260px; border: 3px solid #555; border-radius: 8px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.1);
-        }
-        .faction-card:active { transform: scale(0.95); }
-        .faction-symbol { font-size: 60px; margin-bottom: 10px; }
-        .faction-name { font-size: 24px; font-weight: bold; }
         
-        /* UI Layout */
+        .btn-large {
+            background: var(--accent-color); border: 2px solid #ffb74d; color: white;
+            padding: 15px 40px; font-size: 24px; font-family: inherit; font-weight: bold;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 0 15px var(--accent-color);
+            transition: all 0.2s; margin: 10px; min-width: 200px;
+        }
+        .btn-large:hover { transform: scale(1.05); box-shadow: 0 0 25px var(--accent-color); }
+        .btn-large:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; }
+
+        .btn-small {
+            background: #5d4037; border: 1px solid #8d6e63; color: #ccc;
+            padding: 6px 12px; font-size: 14px; border-radius: 4px; cursor: pointer;
+            transition: 0.2s; font-weight: bold;
+        }
+        .btn-small:hover { background: #8d6e63; color: white; border-color: #ffb74d; }
+
+        /* Mode Select */
+        .mode-card {
+            background: rgba(255,255,255,0.1); border: 2px solid #8d6e63;
+            padding: 20px; margin: 10px; border-radius: 10px; cursor: pointer;
+            width: 280px; transition: 0.2s;
+        }
+        .mode-card:hover { background: rgba(255,255,255,0.2); border-color: #ffb74d; transform: translateY(-5px); }
+        .mode-title { font-size: 22px; color: #ffb74d; margin-bottom: 5px; font-weight: bold; }
+        .mode-desc { font-size: 14px; color: #ccc; }
+
+        /* Upgrade Screen */
+        .upgrade-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px;
+        }
+        .upgrade-card {
+            background: rgba(62, 39, 35, 0.9); border: 2px solid #8d6e63;
+            padding: 20px; border-radius: 10px; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .upgrade-card:hover { border-color: #ffd700; background: rgba(93, 64, 55, 0.9); }
+        .upgrade-icon { font-size: 40px; margin-bottom: 10px; }
+        .upgrade-name { font-size: 20px; color: #ffb74d; font-weight: bold; }
+        .upgrade-cost { color: #81c784; font-size: 14px; margin-top: 5px; }
+
+        /* Lobby UI */
+        .lobby-panel {
+            background: rgba(62, 39, 35, 0.95); padding: 20px; border-radius: 8px;
+            border: 2px solid #ffb74d; width: 100%; max-width: 600px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8); display: flex; flex-direction: column;
+        }
+        .room-list {
+            height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3);
+            margin: 15px 0; border: 1px solid #5d4037; border-radius: 4px; text-align: left;
+        }
+        .room-item {
+            display: flex; justify-content: space-between; padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+        }
+        .room-item:hover { background: rgba(255, 183, 77, 0.2); }
+        .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        input[type="text"] {
+            flex: 1; padding: 10px; font-size: 16px; background: rgba(0,0,0,0.4);
+            border: 1px solid #ffb74d; color: white; border-radius: 4px;
+        }
+
+        /* Faction Cards (Enhanced) */
+        .faction-select { display: flex; gap: 30px; margin-top: 30px; flex-wrap: wrap; justify-content: center; }
+        .faction-card {
+            width: 180px; height: 260px; 
+            border: 4px solid #555; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            background: rgba(0,0,0,0.6); position: relative; overflow: hidden;
+        }
+        
+        .faction-shu:hover { border-color: var(--shu-color); transform: scale(1.1); box-shadow: 0 0 25px var(--shu-color); background: rgba(46, 125, 50, 0.3); }
+        .faction-wei:hover { border-color: var(--wei-color); transform: scale(1.1); box-shadow: 0 0 25px var(--wei-color); background: rgba(21, 101, 192, 0.3); }
+        .faction-wu:hover { border-color: var(--wu-color); transform: scale(1.1); box-shadow: 0 0 25px var(--wu-color); background: rgba(198, 40, 40, 0.3); }
+
+        .faction-symbol { font-size: 70px; margin-bottom: 15px; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        .faction-name { font-size: 28px; font-weight: bold; margin-bottom: 10px; text-shadow: 2px 2px 4px black; }
+        .faction-desc { font-size:12px; color:#ddd; text-align:center; padding: 0 10px; line-height: 1.4; }
+        
+        /* Game UI Layout */
         .canvas-container {
             flex: 1.2; position: relative; background-color: #dccbba;
             display: flex; justify-content: center; align-items: center; min-height: 0; overflow: hidden;
         }
-        #game-canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #game-canvas { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 
         #ui-sidebar {
             flex: 1; background-color: var(--panel-color); color: var(--text-color);
-            display: flex; flex-direction: column; border-top: 4px solid #1a100e; padding: 8px; min-height: 0; 
+            display: flex; flex-direction: column; border-top: 4px solid #1a100e; padding: 8px; min-height: 0; z-index: 10;
         }
 
         @media (orientation: landscape) or (min-width: 1024px) {
@@ -88,6 +150,7 @@
         .scrollable-content { flex: 1; overflow-y: auto; padding-right: 4px; }
         .fixed-bottom { flex-shrink: 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
 
+        /* Stats & Grid */
         .stats-panel {
             display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;
             background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; margin-bottom: 8px;
@@ -99,7 +162,7 @@
         .tower-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 8px; }
         .tower-btn {
             display: flex; flex-direction: column; align-items: center; background-color: #4e342e;
-            border: 2px solid #6d4c41; padding: 4px; border-radius: 4px; min-height: 55px; justify-content: center;
+            border: 2px solid #6d4c41; padding: 4px; border-radius: 4px; min-height: 60px; justify-content: center; cursor: pointer;
         }
         .tower-btn.selected { background-color: #1b5e20; border-color: #66bb6a; }
         .tower-btn.disabled { opacity: 0.4; filter: grayscale(1); }
@@ -107,106 +170,267 @@
         .tower-name { font-size: 11px; font-weight: bold; }
         .tower-cost { font-size: 10px; color: #ffcc80; }
 
-        #detail-panel { background: rgba(0,0,0,0.3); border: 1px solid #8d6e63; padding: 12px; border-radius: 4px; font-size: 12px; margin-bottom: 5px; }
-        .detail-title { color: #ffb74d; font-weight: bold; border-bottom: 1px solid #5d4037; padding-bottom: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; text-align: center; }
-        .detail-item { display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.05); padding: 4px; border-radius: 4px; background: rgba(0,0,0,0.1); }
-        .detail-label { color: #aaa; font-size: 9px; margin-bottom: 2px; }
-        .detail-val { color: #fff; font-weight: bold; font-size: 13px; }
-        .upgrade-preview { color: #81c784; font-size: 11px; margin-top: 10px; border-top: 1px dashed #5d4037; padding-top: 8px; text-align: center; }
-        .upgrade-hint { font-size: 10px; color: #ffcc80; margin-top: 5px; text-align: center; opacity: 0.8; }
-
-        #start-btn {
-            width: 100%; padding: 12px; font-family: inherit; font-size: 18px; font-weight: bold;
-            background-color: var(--accent-color); color: white; border: none; border-radius: 4px; 
-            box-shadow: 0 4px #b71c1c; cursor: pointer;
+        /* PVP Specific UI */
+        .tab-header { display: flex; margin-bottom: 8px; border-bottom: 1px solid #5d4037; }
+        .tab-btn {
+            flex: 1; padding: 8px; background: rgba(0,0,0,0.2); border: none; color: #aaa;
+            cursor: pointer; font-family: inherit; font-weight: bold;
         }
-        #start-btn:active { transform: translateY(2px); box-shadow: 0 2px #b71c1c; }
-        #start-btn:disabled { background-color: #555; box-shadow: none; opacity: 0.6; }
+        .tab-btn.active { color: #ffb74d; background: rgba(255,183,77,0.1); border-bottom: 2px solid #ffb74d; }
 
+        #detail-panel { background: rgba(0,0,0,0.3); border: 1px solid #8d6e63; padding: 12px; border-radius: 4px; font-size: 12px; margin-bottom: 5px; }
+        
         #sound-btn {
             position: absolute; top: 10px; right: 10px;
             background: rgba(0,0,0,0.6); border: 1px solid #ffb74d; color: #ffb74d;
             width: 36px; height: 36px; border-radius: 50%; z-index: 200;
             display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
-        #bgm-name { position: absolute; bottom: 10px; right: 10px; color: rgba(255, 255, 255, 0.4); font-size: 10px; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+        #bgm-name { position: absolute; bottom: 10px; right: 10px; color: rgba(255, 255, 255, 0.4); font-size: 10px; pointer-events: none; opacity: 0; transition: opacity 0.5s; z-index: 50; }
+        
+        #quit-btn-overlay {
+            position: absolute; top: 10px; left: 10px; z-index: 150;
+        }
+
+        .toast {
+            position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px;
+            z-index: 300; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+        }
     </style>
 </head>
 <body>
 
     <div id="game-wrapper">
+        <!-- 1. Splash Screen -->
         <div id="splash-screen" class="screen">
-            <h1 style="font-size: 42px; color: #ffb74d; border:none; text-shadow: 0 0 20px #000;">三國：群雄割據</h1>
-            <p style="color: #ccc; margin-bottom: 20px;">15首戰場名曲 · 無限Roguelike戰役</p>
-            <button class="enter-btn" onclick="activateAudio()">進入戰場</button>
+            <h1 style="font-size: 42px; color: #ffb74d; text-shadow: 0 0 20px #000; margin-bottom: 10px;">三國：無限戰役</h1>
+            <p style="color: #ccc; margin-bottom: 30px;">20首戰場名曲 · 單人戰役 · 多人對戰</p>
+            <button class="btn-large" onclick="window.App.initAudioAndEnter()">進入遊戲</button>
         </div>
 
-        <button id="sound-btn" onclick="toggleSound()">🔊</button>
-        <div id="bgm-name"></div>
+        <!-- 2. Mode Select Screen -->
+        <div id="mode-screen" class="screen hidden">
+            <h2 style="color: #ffb74d; margin-bottom: 20px;">選擇模式</h2>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+                <div class="mode-card" onclick="window.App.selectMode('single')">
+                    <div class="mode-title">🏹 演義模式 (單人)</div>
+                    <div class="mode-desc">挑戰無限波次，每10波可升級科技。</div>
+                </div>
+                <div class="mode-card" onclick="window.App.selectMode('multi')">
+                    <div class="mode-title">⚔️ 對戰模式 (多人)</div>
+                    <div class="mode-desc">線上 1v1，即時自動出兵與手動派兵。</div>
+                </div>
+            </div>
+            <button class="btn-large" style="padding: 10px 30px; font-size: 18px; margin-top: 30px; background: #5d4037;" onclick="window.App.backToSplash()">返回</button>
+        </div>
 
+        <!-- 3. Lobby Screen (Multiplayer Only) -->
+        <div id="lobby-screen" class="screen hidden">
+            <div class="lobby-panel">
+                <h2 style="color:#ffb74d; margin-top:0;">多人對戰大廳</h2>
+                <div class="input-row">
+                    <input type="text" id="room-name-input" placeholder="輸入房間名稱 (例: 赤壁之戰)">
+                    <button class="btn-large" style="margin:0; padding: 10px 20px; min-width: auto; font-size: 16px;" onclick="window.Lobby.createRoom()">創建戰場</button>
+                </div>
+                <div class="room-list" id="room-list">
+                    <div style="padding:20px; color:#aaa; text-align:center;">正在搜尋戰場...</div>
+                </div>
+                <button class="btn-large" style="margin-top:10px; padding: 10px 30px; font-size: 16px; background: #5d4037; min-width: auto;" onclick="window.App.showModeSelect()">返回</button>
+            </div>
+        </div>
+
+        <!-- 4. Faction Select Screen (Shared) -->
         <div id="menu-screen" class="screen hidden">
-            <h1 style="font-size: 32px; border: none; margin: 0; color: #ffb74d;">選擇陣營</h1>
+            <h2 id="faction-title-text" style="color: #ffb74d;">選擇陣營</h2>
             <div class="faction-select">
-                <div class="faction-card faction-shu" onclick="startGame('shu')">
+                <div class="faction-card faction-shu" onclick="window.App.selectFaction('shu')">
                     <div class="faction-symbol" style="color: var(--shu-color)">蜀</div>
                     <div class="faction-name">蜀漢</div>
+                    <div class="faction-desc">單人: 血量與防禦較高<br>多人: 步兵強化<br><span style="color:#81c784">特色：均衡穩定</span></div>
                 </div>
-                <div class="faction-card faction-wei" onclick="startGame('wei')">
+                <div class="faction-card faction-wei" onclick="window.App.selectFaction('wei')">
                     <div class="faction-symbol" style="color: var(--wei-color)">魏</div>
                     <div class="faction-name">曹魏</div>
+                    <div class="faction-desc">單人: 攻速與冷卻較快<br>多人: 騎兵強化<br><span style="color:#64b5f6">特色：神速壓制</span></div>
                 </div>
-                <div class="faction-card faction-wu" onclick="startGame('wu')">
+                <div class="faction-card faction-wu" onclick="window.App.selectFaction('wu')">
                     <div class="faction-symbol" style="color: var(--wu-color)">吳</div>
                     <div class="faction-name">東吳</div>
+                    <div class="faction-desc">單人: 攻擊與爆發較高<br>多人: 弓手強化<br><span style="color:#e57373">特色：火力猛烈</span></div>
                 </div>
             </div>
+            <button class="btn-large" style="margin-top:30px; padding: 10px 30px; font-size: 16px; background: #5d4037;" onclick="window.App.showModeSelect()">返回</button>
         </div>
 
-        <div id="level-screen" class="screen hidden">
-            <h2 id="level-title">大獲全勝</h2>
-            <p id="level-reward" style="color: #81c784; font-size: 20px;"></p>
-            <button class="next-btn" onclick="nextLevel()">繼續進軍</button>
+        <!-- 5. Tech Upgrade Screen (Single Player) -->
+        <div id="upgrade-screen" class="screen hidden">
+            <h2 style="color: #ffb74d; margin-bottom: 20px;">戰備升級</h2>
+            <div style="color: #ccc; margin-bottom: 20px;">使用庫銀升級軍備，迎接下一階段的挑戰！</div>
+            <div class="upgrade-grid">
+                <div class="upgrade-card" onclick="window.SingleGame.buyTech('bow')">
+                    <div class="upgrade-icon">🏹</div>
+                    <div class="upgrade-name">強弓</div>
+                    <div style="font-size:12px; color:#aaa;">增加所有武將射程</div>
+                    <div id="cost-bow" class="upgrade-cost">💰200</div>
+                </div>
+                <div class="upgrade-card" onclick="window.SingleGame.buyTech('arrow')">
+                    <div class="upgrade-icon">🗡️</div>
+                    <div class="upgrade-name">銳箭</div>
+                    <div style="font-size:12px; color:#aaa;">增加遠程武將攻擊</div>
+                    <div id="cost-arrow" class="upgrade-cost">💰200</div>
+                </div>
+                <div class="upgrade-card" onclick="window.SingleGame.buyTech('spear')">
+                    <div class="upgrade-icon">🔱</div>
+                    <div class="upgrade-name">長槍</div>
+                    <div style="font-size:12px; color:#aaa;">增加近戰武將攻擊</div>
+                    <div id="cost-spear" class="upgrade-cost">💰200</div>
+                </div>
+                <div class="upgrade-card" onclick="window.SingleGame.buyTech('sword')">
+                    <div class="upgrade-icon">⚔️</div>
+                    <div class="upgrade-name">鋼刀</div>
+                    <div style="font-size:12px; color:#aaa;">增加近戰武將攻速</div>
+                    <div id="cost-sword" class="upgrade-cost">💰200</div>
+                </div>
+            </div>
+            <div style="margin-top:20px; font-size: 18px;">剩餘庫銀: <span id="upgrade-gold" style="color:#ffd700">0</span></div>
+            <button class="btn-large" style="margin-top:30px;" onclick="window.SingleGame.finishUpgrade()">完成升級，進入下一關</button>
         </div>
+
+        <!-- 6. Waiting Screen (Multiplayer) -->
+        <div id="waiting-screen" class="screen hidden">
+            <div style="font-size: 40px; margin-bottom: 20px;">⏳</div>
+            <h2>等待對手加入...</h2>
+            <p id="room-id-display" style="color: #ffb74d;"></p>
+            <button class="btn-large" style="margin-top:20px; background:#5d4037; font-size:14px; padding:10px 20px;" onclick="location.reload()">取消並返回</button>
+        </div>
+
+        <!-- 7. Game Over Screen -->
         <div id="end-screen" class="screen hidden">
-            <h2 id="end-title">城池失守</h2>
+            <h2 id="end-title">戰役結束</h2>
             <p id="end-desc"></p>
-            <button class="next-btn" onclick="location.reload()" style="background: var(--accent-color); border:none;">返回標題</button>
+            <button class="btn-large" onclick="location.reload()">返回標題</button>
         </div>
+
+        <!-- Common Game UI -->
+        <button id="sound-btn" onclick="window.soundManager.toggle()">🔊</button>
+        <div id="bgm-name"></div>
+        
+        <!-- Added Overlay Quit Button -->
+        <div id="quit-btn-overlay" class="hidden">
+            <button class="btn-small" style="background:rgba(0,0,0,0.6); color:#fff; border:1px solid #aaa;" onclick="window.App.quitGame()">🏠 退出戰役</button>
+        </div>
+
+        <div id="toast" class="toast"></div>
 
         <div class="canvas-container">
-            <canvas id="game-canvas" width="880" height="700"></canvas>
+            <canvas id="game-canvas" width="880" height="600"></canvas>
         </div>
         
-        <aside id="ui-sidebar">
-            <div class="header-info">
-                <span id="faction-label">陣營</span>
-                <span id="map-label">關卡: 1</span>
+        <aside id="ui-sidebar" class="hidden">
+            <div class="header-info" style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 5px;">
+                <span id="faction-label" style="font-weight:bold;">陣營</span>
+                <button class="btn-small" onclick="window.App.quitGame()">🏠 回大廳</button>
             </div>
+
             <div class="stats-panel">
-                <div class="stat-item"><span class="stat-label">波次</span><span id="wave-display" class="stat-value">0/5</span></div>
-                <div class="stat-item"><span class="stat-label">耐久</span><span id="lives-display" class="stat-value" style="color: #ef5350;">20</span></div>
-                <div class="stat-item"><span class="stat-label">庫銀</span><span id="gold-display" class="stat-value" style="color: #ffd700;">150</span></div>
+                <div class="stat-item"><span class="stat-label" id="stat-1-lbl">波次</span><span id="stat-1-val" class="stat-value">0/5</span></div>
+                <div class="stat-item"><span class="stat-label" id="stat-2-lbl">耐久</span><span id="stat-2-val" class="stat-value" style="color: #ef5350;">20</span></div>
+                <div class="stat-item"><span class="stat-label" id="stat-3-lbl">庫銀</span><span id="stat-3-val" class="stat-value" style="color: #ffd700;">150</span></div>
             </div>
+
+            <!-- PVP Only Tabs -->
+            <div id="pvp-tabs" class="tab-header hidden">
+                <button class="tab-btn active" onclick="window.UI.switchTab('defense')">防禦 (造塔)</button>
+                <button class="tab-btn" onclick="window.UI.switchTab('offense')">進攻 (派兵)</button>
+            </div>
+
             <div class="scrollable-content">
-                <div id="tower-grid" class="tower-grid"></div>
-                <div id="detail-panel"><div style="text-align: center; color: #757575; padding: 20px;">選擇武將查看詳情</div></div>
-                <p class="upgrade-hint">💡 提示：點擊地圖上已部署的武將進行晉升或撤退</p>
-                <div id="action-area" class="action-row hidden">
-                    <div style="display: flex; gap: 8px; margin-top: 10px;">
-                        <button id="btn-upgrade" class="btn-mini btn-upg" onclick="actionUpgrade()">晉升 <span id="cost-upg"></span></button>
-                        <button id="btn-sell" class="btn-mini btn-sell" onclick="actionSell()">撤退</button>
+                <!-- Defense Grid (Shared) -->
+                <div id="defense-panel">
+                    <div id="tower-grid" class="tower-grid"></div>
+                    <div id="detail-panel"><div style="text-align: center; color: #757575; padding: 20px;">選擇武將查看詳情</div></div>
+                    <p class="upgrade-hint" id="hint-text" style="font-size: 10px; color: #ffcc80; text-align: center; opacity: 0.8;">💡 提示：點擊地圖武將進行晉升</p>
+                    <div id="action-area" class="hidden" style="display: flex; gap: 8px; justify-content: center; margin-top: 5px;">
+                        <button id="btn-upgrade" class="tower-btn" style="min-height: 30px; width: 80px;" onclick="window.SingleGame.actionUpgrade()">晉升</button>
+                        <button id="btn-sell" class="tower-btn" style="min-height: 30px; width: 60px; background: #b71c1c;" onclick="window.SingleGame.actionSell()">撤退</button>
+                    </div>
+                </div>
+
+                <!-- Offense Grid (PVP Only) -->
+                <div id="offense-panel" class="hidden">
+                    <div id="unit-grid" class="tower-grid"></div>
+                    <div style="font-size: 11px; color: #aaa; padding: 10px; text-align: center;">
+                        花費金幣派遣部隊進攻敵方城池。<br>每擊殺敵軍或敵軍到達對方基地皆可獲利。<br>
+                        <span style="color:#ffb74d;">此外，城堡會自動定期派出士兵。</span>
                     </div>
                 </div>
             </div>
+
             <div class="fixed-bottom">
-                <button id="start-btn" onclick="startNextWave()">開始戰鬥</button>
+                <button id="start-btn" class="btn-large" style="width: 100%; font-size: 18px; padding: 12px; margin: 0; min-width: 0;" onclick="window.SingleGame.startNextWave()">開始戰鬥</button>
             </div>
         </aside>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 使用者請在此填入您的 Firebase 設定 (若要在本地運行多人模式) ---
+        const manualFirebaseConfig = {
+            apiKey: "AIzaSyCI4Y5rv0qMTpB9h-wOi01D1A1k5cTlWWM",
+            authDomain: "sangotd-e7dd8.firebaseapp.com",
+            projectId: "sangotd-e7dd8",
+            storageBucket: "sangotd-e7dd8.firebasestorage.app",
+            messagingSenderId: "765117504953",
+            appId: "1:765117504953:web:1fadbe30ccb126438daa68"
+        };
+
+        // 自動判斷使用環境變數還是手動設定
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else if (manualFirebaseConfig.apiKey !== "") {
+            firebaseConfig = manualFirebaseConfig;
+        } else {
+            console.warn("未偵測到 Firebase 設定，多人模式將無法使用。");
+            firebaseConfig = {}; // 空物件，避免報錯
+        }
+
+        const app = Object.keys(firebaseConfig).length > 0 ? initializeApp(firebaseConfig) : null;
+        const auth = app ? getAuth(app) : null;
+        const db = app ? getFirestore(app) : null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
+
+        // Make Firebase accessible globally for the Game Logic
+        window.FB = { db, auth, appId, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment, firebaseConfig };
+        
+        // Auth Init
+        const initAuth = async () => {
+            if (!auth) return;
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if(user) {
+                    window.currentUser = user;
+                    console.log("Logged in as", user.uid);
+                    if(window.Lobby) window.Lobby.init(); // Start listening for rooms
+                }
+            });
+        }
+    </script>
+
     <script>
-        // --- High Power Audio System (15 Tracks) ---
+        // --- Shared Audio System (High Quality) ---
         class SoundManager {
             constructor() {
                 this.ctx = null; this.muted = false; this.masterGain = null;
@@ -223,12 +447,17 @@
                     'strategy': { name: '運籌帷幄', tempo: 95, logic: this.bgmStrategy.bind(this) },
                     'siege': { name: '兵臨城下', tempo: 145, logic: this.bgmSiege.bind(this) },
                     'dragon': { name: '臥龍升天', tempo: 130, logic: this.bgmDragon.bind(this) },
-                    // New Mongolian Tracks
                     'khoomei': { name: '呼麥低吟', tempo: 80, logic: this.bgmKhoomei.bind(this) },
                     'hooves': { name: '鐵騎踏破', tempo: 180, logic: this.bgmHooves.bind(this) },
                     'khagan': { name: '大汗令', tempo: 100, logic: this.bgmKhagan.bind(this) },
                     'storm': { name: '北疆風暴', tempo: 160, logic: this.bgmStorm.bind(this) },
-                    'horde': { name: '金帳盛宴', tempo: 120, logic: this.bgmHorde.bind(this) }
+                    'horde': { name: '金帳盛宴', tempo: 120, logic: this.bgmHorde.bind(this) },
+                    // New Chime Tracks
+                    'chime_dawn': { name: '編鐘·晨曦', tempo: 60, logic: this.bgmChimeDawn.bind(this) },
+                    'court_ritual': { name: '宮廷雅樂', tempo: 90, logic: this.bgmCourt.bind(this) },
+                    'ancient_echo': { name: '遠古迴響', tempo: 70, logic: this.bgmEcho.bind(this) },
+                    'ceremony': { name: '祭天大典', tempo: 80, logic: this.bgmCeremony.bind(this) },
+                    'river_flow': { name: '流水編鐘', tempo: 100, logic: this.bgmRiver.bind(this) }
                 };
             }
             init() {
@@ -237,9 +466,11 @@
                     this.ctx = new AudioContext();
                     this.masterGain = this.ctx.createGain();
                     this.masterGain.connect(this.ctx.destination);
-                    this.masterGain.gain.value = 1.0; 
+                    this.masterGain.gain.value = 0.6; // Slightly louder
                 }
-                if (this.ctx.state === 'suspended') this.ctx.resume();
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume().then(() => console.log("Audio Resumed"));
+                }
                 this.startBGM();
             }
             toggle() {
@@ -275,6 +506,7 @@
                 setTimeout(() => this.scheduler(), 25);
             }
             triggerDrum(t, f, v) {
+                if(!this.ctx) return;
                 const osc = this.ctx.createOscillator(); const g = this.ctx.createGain();
                 osc.type = 'sine'; osc.frequency.setValueAtTime(f, t);
                 osc.frequency.exponentialRampToValueAtTime(10, t + 0.2);
@@ -282,442 +514,1135 @@
                 osc.connect(g); g.connect(this.masterGain); osc.start(t); osc.stop(t + 0.2);
             }
             triggerPipa(t, f, d, v=0.3) {
+                if(!this.ctx) return;
                 const osc = this.ctx.createOscillator(); const g = this.ctx.createGain();
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(f, t);
                 g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.01, t + d);
                 osc.connect(g); g.connect(this.masterGain); osc.start(t); osc.stop(t + d);
             }
             triggerHorse(t, v) {
-                // Morin Khuur-like staccato bow sound
+                if(!this.ctx) return;
                 const osc = this.ctx.createOscillator(); const g = this.ctx.createGain();
                 osc.type = 'sawtooth'; osc.frequency.setValueAtTime(110, t);
                 g.gain.setValueAtTime(v, t); g.gain.linearRampToValueAtTime(0, t + 0.05);
                 osc.connect(g); g.connect(this.masterGain); osc.start(t); osc.stop(t + 0.05);
             }
-            // TRACKS LOGIC
-            bgmAmbush(b, t) { if (b % 2 === 0) this.triggerPipa(t, 330, 0.1); if (b % 8 === 0) this.triggerDrum(t, 60, 1.2); }
+            triggerBell(t, f, v=0.4) {
+                if(!this.ctx) return;
+                const osc = this.ctx.createOscillator(); const g = this.ctx.createGain();
+                osc.type = 'sine'; 
+                osc.frequency.setValueAtTime(f, t);
+                g.gain.setValueAtTime(0, t);
+                g.gain.linearRampToValueAtTime(v, t + 0.02); 
+                g.gain.exponentialRampToValueAtTime(0.01, t + 1.5); 
+                osc.connect(g); g.connect(this.masterGain); osc.start(t); osc.stop(t + 1.5);
+            }
+
+            bgmAmbush(b, t) { if (b % 2 === 0) this.triggerPipa(t, 330, 0.3); if (b % 8 === 0) this.triggerDrum(t, 60, 1.2); }
             bgmGeneral(b, t) { if (b % 4 === 0) this.triggerDrum(t, 50, 1.3); if (b % 8 === 4) this.triggerDrum(t, 80, 0.9); }
             bgmLone(b, t) { if (b % 3 === 0) this.triggerDrum(t, 100, 0.8); }
-            bgmEmpty(b, t) { if (b % 16 === 0) this.triggerPipa(t, 660, 0.5); }
+            bgmEmpty(b, t) { if (b % 16 === 0) this.triggerPipa(t, 660, 0.8); }
             bgmCliff(b, t) { if (b % 2 === 0) this.triggerDrum(t, 70, 0.9); }
-            bgmPeach(b, t) { if (b % 8 === 0) this.triggerPipa(t, 440, 0.4); }
+            bgmPeach(b, t) { if (b % 8 === 0) this.triggerPipa(t, 440, 0.6); }
             bgmMarch(b, t) { if (b % 4 === 0) this.triggerDrum(t, 90, 1.0); }
             bgmStrategy(b, t) { if (b % 16 === 0) this.triggerPipa(t, 220, 1.2); }
             bgmSiege(b, t) { if (b % 2 === 0) this.triggerDrum(t, 60, 0.9); }
             bgmDragon(b, t) { if (b % 4 === 0) this.triggerDrum(t, 120, 1.0); }
-            // MONGOLIAN TRACKS
-            bgmKhoomei(b, t) { if(b%16===0) this.triggerDrum(t, 40, 1.0); if(b%32<8) this.triggerPipa(t, 110, 0.2, 0.5); }
-            bgmHooves(b, t) { if(b%3===0) this.triggerDrum(t, 80, 0.8); if(b%3===1) this.triggerClick(t, 0.1); }
-            bgmKhagan(b, t) { if(b%4===0) this.triggerDrum(t, 50, 1.4); if(b%8===2) this.triggerGong(t, 0.2); }
-            bgmStorm(b, t) { if(Math.random()>0.8) this.triggerNoise(t, 0.2, 0.1); if(b%4===0) this.triggerHorse(t, 0.3); }
-            bgmHorde(b, t) { if(b%8<4) this.triggerPipa(t, [330, 392, 440][b%3], 0.1, 0.3); if(b%4===0) this.triggerDrum(t, 100, 0.8); }
+            bgmKhoomei(b, t) { if(b%16===0) this.triggerDrum(t, 40, 1.0); }
+            bgmHooves(b, t) { if(b%3===0) this.triggerDrum(t, 80, 0.8); }
+            bgmKhagan(b, t) { if(b%4===0) this.triggerDrum(t, 50, 1.4); }
+            bgmStorm(b, t) { if(b%4===0) this.triggerHorse(t, 0.3); }
+            bgmHorde(b, t) { if(b%4===0) this.triggerDrum(t, 100, 0.8); }
+            
+            bgmChimeDawn(b, t) { if(b%4===0) this.triggerBell(t, 330); if(b%8===2) this.triggerBell(t, 440, 0.3); }
+            bgmCourt(b, t) { if(b%4===0) this.triggerBell(t, 262); if(b%4===2) this.triggerBell(t, 392, 0.3); }
+            bgmEcho(b, t) { if(b%8===0) this.triggerBell(t, 196, 0.5); }
+            bgmCeremony(b, t) { if(b%2===0) this.triggerBell(t, 523, 0.2); if(b%8===0) this.triggerDrum(t, 60, 1.0); }
+            bgmRiver(b, t) { if(b%2===0) this.triggerBell(t, 440, 0.3); if(b%4===1) this.triggerPipa(t, 660, 0.1); }
 
-            triggerGong(t, v) { this.triggerPipa(t, 150, 0.8, v); }
-            triggerNoise(t, d, v) { /* simplified white noise burst */ }
-            triggerClick(t, v) { this.triggerPipa(t, 1200, 0.05, v); }
-
-            playShoot() { if(!this.muted && this.ctx) this.triggerPipa(this.ctx.currentTime, 800, 0.05, 0.2); }
-            playHit() { if(!this.muted && this.ctx) this.triggerDrum(this.ctx.currentTime, 60, 0.5); }
-            playBuild() { if(!this.muted && this.ctx) this.triggerPipa(this.ctx.currentTime, 523, 0.2, 0.5); }
-            playSell() { if(!this.muted && this.ctx) this.triggerDrum(this.ctx.currentTime, 200, 0.4); }
-            playWin() { if(!this.muted && this.ctx) this.triggerPipa(this.ctx.currentTime, 1046, 0.5, 0.6); }
+            playShoot() { if(!this.muted && this.ctx) this.triggerPipa(this.ctx.currentTime, 800, 0.1, 0.3); }
+            playHit() { if(!this.muted && this.ctx) this.triggerDrum(this.ctx.currentTime, 60, 0.6); }
+            playBuild() { if(!this.muted && this.ctx) this.triggerPipa(this.ctx.currentTime, 523, 0.3, 0.6); }
+            playSell() { if(!this.muted && this.ctx) this.triggerDrum(this.ctx.currentTime, 200, 0.5); }
+            playWin() { if(!this.muted && this.ctx) this.triggerPipa(this.ctx.currentTime, 1046, 0.6, 0.7); }
             playLose() { if(!this.muted && this.ctx) this.triggerDrum(this.ctx.currentTime, 40, 1.2); }
         }
 
         const soundManager = new SoundManager();
-        function toggleSound() { soundManager.toggle(); }
-        function activateAudio() {
-            soundManager.init();
-            document.getElementById('splash-screen').classList.add('hidden');
-            document.getElementById('menu-screen').classList.remove('hidden');
-        }
+        window.soundManager = soundManager;
 
-        // --- Game Logic ---
+        // --- Game Data & Config ---
+        const GRID_SIZE = 40; 
+        const COLS = 22; 
+        const ROWS = 15;
+        
         const ARCHETYPES = {
-            'archer': { type: 'single', range: 180, damage: 15, cooldown: 25, nameType: '神射', desc: '射程遠，攻速中等' },
-            'fast':   { type: 'single', range: 130, damage: 8, cooldown: 10, nameType: '突擊', desc: '攻速極快，低傷害' },
-            'heavy':  { type: 'single', range: 120, damage: 60, cooldown: 55, nameType: '重擊', desc: '攻擊高，攻速慢' },
-            'line':   { type: 'line', range: 150, damage: 12, cooldown: 40, nameType: '穿透', desc: '直線貫穿多個敵人' },
-            'splash': { type: 'splash', range: 110, damage: 40, cooldown: 60, nameType: '範圍', desc: '造成小範圍爆炸傷害' },
-            'magic':  { type: 'magic', range: 160, damage: 20, cooldown: 50, nameType: '法術', desc: '範圍傷害並附加異常狀態' }
+            'archer': { type: 'single', range: 180, damage: 15, cooldown: 25, desc: '射程遠，攻速中等' },
+            'fast':   { type: 'single', range: 130, damage: 8, cooldown: 10, desc: '攻速極快，低傷害' },
+            'heavy':  { type: 'single', range: 120, damage: 60, cooldown: 55, desc: '攻擊高，攻速慢' },
+            'line':   { type: 'line', range: 150, damage: 12, cooldown: 40, desc: '直線貫穿多個敵人' },
+            'splash': { type: 'splash', range: 110, damage: 40, cooldown: 60, desc: '造成小範圍爆炸' },
+            'magic':  { type: 'magic', range: 160, damage: 20, cooldown: 50, desc: '範圍傷害並減速' }
         };
 
         const FACTIONS = {
-            'shu': { name: '蜀漢', color: '#2e7d32', bgColor: '#d7ccc8', mapPrefixes: ['劍閣', '漢中', '祁山'], generals: [
-                { name: '黃忠', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { range: 230 } },
-                { name: '趙雲', icon: '\u{26A1}', cost: 90, base: 'fast', stats: { cooldown: 8 } },
-                { name: '關羽', icon: '\u{1F5E1}', cost: 120, base: 'heavy', stats: { damage: 85 } },
-                { name: '馬超', icon: '\u{1F40E}', cost: 140, base: 'line', stats: { damage: 15 } },
-                { name: '張飛', icon: '\u{1F4A5}', cost: 180, base: 'splash', stats: { range: 130 } },
-                { name: '諸葛亮', icon: '\u{262F}', cost: 250, base: 'magic', effect: 'slow', stats: { cooldown: 40 } }
-            ], decorations: ['\u{1F332}', '\u{1FAA8}'] },
-            'wei': { name: '曹魏', color: '#1565c0', bgColor: '#cfd8dc', mapPrefixes: ['許昌', '合肥', '樊城'], generals: [
-                { name: '夏侯淵', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { cooldown: 20 } },
-                { name: '張遼', icon: '\u{2694}', cost: 90, base: 'fast', stats: { damage: 10 } },
-                { name: '夏侯惇', icon: '\u{1F441}', cost: 120, base: 'heavy', stats: { cooldown: 45 } },
-                { name: '徐晃', icon: '\u{1FA93}', cost: 140, base: 'line', stats: { range: 170 } },
-                { name: '典韋', icon: '\u{1F4AA}', cost: 180, base: 'splash', stats: { damage: 50, splashRadius: 80 } },
-                { name: '司馬懿', icon: '\u{1F52E}', cost: 250, base: 'magic', effect: 'stun', stats: { damage: 30 } }
-            ], decorations: ['\u{1F9F1}', '\u{1F3DA}'] },
-            'wu': { name: '東吳', color: '#c62828', bgColor: '#b3e5fc', mapPrefixes: ['赤壁', '夷陵', '建業'], generals: [
-                { name: '孫尚香', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { cooldown: 18, damage: 11 } },
-                { name: '甘寧', icon: '\u{1F514}', cost: 90, base: 'fast', effect: 'burn' },
-                { name: '太史慈', icon: '\u{1F6E1}', cost: 120, base: 'heavy', stats: { range: 140 } },
-                { name: '凌統', icon: '\u{1F531}', cost: 140, base: 'line', stats: { cooldown: 30 } },
-                { name: '黃蓋', icon: '\u{1F4A3}', cost: 180, base: 'splash', stats: { damage: 30, cooldown: 40 } },
-                { name: '周瑜', icon: '\u{1F525}', cost: 250, base: 'magic', effect: 'burn', stats: { damage: 45 } }
-            ], decorations: ['\u{1F343}', '\u{1F41F}'] }
+            'shu': { name: '蜀漢', color: '#2e7d32', bgColor: '#d7ccc8', mapPrefixes: ['劍閣', '漢中'], 
+                     pvpBonus: { hp: 1.4, speed: 0.9, dmg: 1.0, desc: '步兵體力強化' },
+                     generals: [
+                { name: '黃忠', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { range: 235, damage: 16, cooldown: 26 } },
+                { name: '趙雲', icon: '\u{26A1}', cost: 90, base: 'fast', stats: { cooldown: 9, damage: 9 } },
+                { name: '關羽', icon: '\u{1F5E1}', cost: 120, base: 'heavy', stats: { damage: 88, range: 125, cooldown: 55 } },
+                { name: '馬超', icon: '\u{1F40E}', cost: 140, base: 'line', stats: { damage: 16, cooldown: 38 } },
+                { name: '張飛', icon: '\u{1F4A5}', cost: 180, base: 'splash', stats: { range: 135, damage: 42, cooldown: 62 } },
+                { name: '孔明', icon: '\u{262F}', cost: 250, base: 'magic', effect: 'slow', stats: { cooldown: 42, range: 165 } }
+            ]},
+            'wei': { name: '曹魏', color: '#1565c0', bgColor: '#cfd8dc', mapPrefixes: ['許昌', '樊城'],
+                     pvpBonus: { hp: 1.0, speed: 1.4, dmg: 1.0, desc: '騎兵速度強化' },
+                     generals: [
+                { name: '夏侯淵', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { cooldown: 20, damage: 13, range: 170 } },
+                { name: '張遼', icon: '\u{2694}', cost: 90, base: 'fast', stats: { damage: 7, cooldown: 7 } },
+                { name: '夏侯惇', icon: '\u{1F441}', cost: 120, base: 'heavy', stats: { cooldown: 45, damage: 55, range: 115 } },
+                { name: '徐晃', icon: '\u{1FA93}', cost: 140, base: 'line', stats: { range: 165, cooldown: 32, damage: 10 } },
+                { name: '典韋', icon: '\u{1F4AA}', cost: 180, base: 'splash', stats: { damage: 45, cooldown: 50, range: 100 } },
+                { name: '司馬懿', icon: '\u{1F52E}', cost: 250, base: 'magic', effect: 'stun', stats: { damage: 25, cooldown: 45 } }
+            ]},
+            'wu': { name: '東吳', color: '#c62828', bgColor: '#b3e5fc', mapPrefixes: ['赤壁', '夷陵'],
+                    pvpBonus: { hp: 1.0, speed: 1.0, dmg: 1.3, desc: '弓兵攻擊強化' },
+                    generals: [
+                { name: '孫尚香', icon: '\u{1F3F9}', cost: 60, base: 'archer', stats: { cooldown: 28, damage: 20, range: 175 } },
+                { name: '甘寧', icon: '\u{1F514}', cost: 90, base: 'fast', effect: 'burn', stats: { damage: 10, cooldown: 12 } },
+                { name: '太史慈', icon: '\u{1F6E1}', cost: 120, base: 'heavy', stats: { range: 130, damage: 65, cooldown: 60 } },
+                { name: '凌統', icon: '\u{1F531}', cost: 140, base: 'line', stats: { cooldown: 45, damage: 15, range: 145 } },
+                { name: '黃蓋', icon: '\u{1F4A3}', cost: 180, base: 'splash', stats: { damage: 35, range: 120, cooldown: 55 } },
+                { name: '周瑜', icon: '\u{1F525}', cost: 250, base: 'magic', effect: 'burn', stats: { damage: 50, cooldown: 55, range: 170 } }
+            ]}
         };
 
-        const GRID_SIZE = 40; const COLS = 22; const ROWS = 17;
+        const PVP_UNITS = [
+            { id: 'soldier', name: '步兵', cost: 30, icon: '⚔️', hp: 80, speed: 1.2, dmg: 5, reward: 10 },
+            { id: 'cavalry', name: '騎兵', cost: 60, icon: '🐎', hp: 120, speed: 2.0, dmg: 8, reward: 20 },
+            { id: 'general', name: '大將', cost: 150, icon: '👺', hp: 400, speed: 0.9, dmg: 30, reward: 50 }
+        ];
+
+        // --- App Controller ---
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
-        
-        let gameState = {
-            activeFaction: null, factionData: null, difficultyLevel: 1, 
-            towers: [], enemies: [], projectiles: [], particles: [],
-            gold: 150, lives: 20, wave: 0, active: false, spawning: false,
-            enemiesToSpawn: [], spawnTimer: 0,
-            selectedTowerType: null, selectedPlacedTower: null, gameOver: false,
-            allPaths: [], roadTiles: [], decorations: [], mouseX: 0, mouseY: 0
-        };
+        let gameMode = null; // 'single' or 'multi'
+        let mousePos = {x:0, y:0};
 
-        function startGame(factionKey) {
-            gameState.activeFaction = factionKey; gameState.factionData = FACTIONS[factionKey];
-            gameState.difficultyLevel = 1; gameState.gold = 150;
-            document.getElementById('menu-screen').classList.add('hidden');
-            const facLab = document.getElementById('faction-label');
-            if(facLab) { facLab.textContent = gameState.factionData.name; facLab.style.color = gameState.factionData.color; }
-            setupTowerButtons(); generateMap(); resetSession(150); gameLoop();
-        }
-
-        function generateMap() {
-            soundManager.selectRandomTrack();
-            const f = gameState.factionData;
-            const titleEl = document.getElementById('faction-title');
-            if(titleEl) titleEl.textContent = f.mapPrefixes[Math.floor(Math.random()*f.mapPrefixes.length)] + "前線";
-            const mapLab = document.getElementById('map-label');
-            if(mapLab) mapLab.textContent = `關卡: ${gameState.difficultyLevel}`;
-
-            const startY = 3 + Math.floor(Math.random()*(ROWS-6));
-            const endY = 3 + Math.floor(Math.random()*(ROWS-6));
-            let mainPathGrid = createPathGrid({x: 0, y: startY}, {x: COLS-1, y: endY});
-            gameState.allPaths = [mainPathGrid.map(p => ({x: p.x*GRID_SIZE+20, y: p.y*GRID_SIZE+20}))];
-            
-            const roadTileSet = new Set();
-            mainPathGrid.forEach(t => roadTileSet.add(`${t.x},${t.y}`));
-            gameState.roadTiles = []; 
-            roadTileSet.forEach(s => { let [x,y] = s.split(',').map(Number); gameState.roadTiles.push({x: x*GRID_SIZE+20, y: y*GRID_SIZE+20}); });
-            generateDecorations(roadTileSet);
-        }
-
-        function createPathGrid(s, e) {
-            let p = []; let c = {...s}; p.push({...c});
-            let mX = Math.floor(COLS/2);
-            while(c.x < mX) { c.x++; p.push({...c}); }
-            while(c.y !== e.y) { c.y += (c.y < e.y ? 1 : -1); p.push({...c}); }
-            while(c.x < e.x) { c.x++; p.push({...c}); }
-            return p;
-        }
-
-        function generateDecorations(road) {
-            gameState.decorations = [];
-            for(let i=0; i<45; i++) {
-                let c = Math.floor(Math.random()*COLS); let r = Math.floor(Math.random()*ROWS);
-                if(!road.has(`${c},${r}`)) {
-                    gameState.decorations.push({x: c*40+20, y: r*40+20, icon: gameState.factionData.decorations[Math.floor(Math.random()*2)], rot: Math.random()*7});
+        const App = {
+            initAudioAndEnter: function() {
+                window.soundManager.init();
+                document.getElementById('splash-screen').classList.add('hidden');
+                document.getElementById('mode-screen').classList.remove('hidden');
+            },
+            selectMode: function(mode) {
+                gameMode = mode;
+                document.getElementById('mode-screen').classList.add('hidden');
+                if (mode === 'single') {
+                    document.getElementById('menu-screen').classList.remove('hidden');
+                } else {
+                    document.getElementById('lobby-screen').classList.remove('hidden');
                 }
+            },
+            backToSplash: function() {
+                document.getElementById('mode-screen').classList.add('hidden');
+                document.getElementById('splash-screen').classList.remove('hidden');
+            },
+            showModeSelect: function() {
+                document.getElementById('lobby-screen').classList.add('hidden');
+                document.getElementById('menu-screen').classList.add('hidden');
+                document.getElementById('mode-screen').classList.remove('hidden');
+            },
+            selectFaction: function(faction) {
+                document.getElementById('menu-screen').classList.add('hidden');
+                if (gameMode === 'single') {
+                    window.SingleGame.start(faction);
+                } else {
+                    window.MultiGame.selectFaction(faction);
+                }
+            },
+            quitGame: function() {
+                window.SingleGame.state.active = false;
+                window.SingleGame.state.gameOver = true;
+                window.MultiGame.state.active = false;
+                
+                document.getElementById('ui-sidebar').classList.add('hidden');
+                document.getElementById('quit-btn-overlay').classList.add('hidden');
+                document.getElementById('end-screen').classList.add('hidden');
+                
+                this.showModeSelect();
+            },
+            toast: function(msg) {
+                const el = document.getElementById('toast');
+                el.textContent = msg; el.style.opacity = 1;
+                setTimeout(() => el.style.opacity = 0, 2000);
             }
-        }
+        };
+        window.App = App;
 
-        function setupTowerButtons() {
-            const grid = document.getElementById('tower-grid'); if(!grid) return;
-            grid.innerHTML = '';
-            gameState.factionData.generals.forEach((g, i) => {
-                const btn = document.createElement('div'); btn.className = 'tower-btn'; btn.onclick = () => selectTowerType(i);
-                btn.innerHTML = `<div class="tower-icon-display">${g.icon}</div><div class="tower-name">${g.name}</div><div class="tower-cost">💰${g.cost}</div>`;
-                grid.appendChild(btn);
-            });
-        }
+        // --- UI Helper ---
+        const UI = {
+            setupTowerGrid: function(factionKey) {
+                const grid = document.getElementById('tower-grid'); grid.innerHTML = '';
+                FACTIONS[factionKey].generals.forEach((g, i) => {
+                    const btn = document.createElement('div'); btn.className = 'tower-btn'; 
+                    btn.onclick = () => gameMode === 'single' ? window.SingleGame.selectTower(i) : window.MultiGame.selectTower(i);
+                    btn.innerHTML = `<div class="tower-icon-display">${g.icon}</div><div class="tower-name">${g.name}</div><div class="tower-cost">💰${g.cost}</div>`;
+                    grid.appendChild(btn);
+                });
+            },
+            setupOffenseGrid: function() {
+                const grid = document.getElementById('unit-grid'); grid.innerHTML = '';
+                PVP_UNITS.forEach(u => {
+                    const btn = document.createElement('div'); btn.className = 'tower-btn';
+                    btn.onclick = () => window.MultiGame.sendUnit(u.id);
+                    btn.innerHTML = `<div class="tower-icon-display">${u.icon}</div><div class="tower-name">${u.name}</div><div class="tower-cost">💰${u.cost}</div>`;
+                    grid.appendChild(btn);
+                });
+            },
+            switchTab: function(tab) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-btn')[tab==='defense'?0:1].classList.add('active');
+                document.getElementById('defense-panel').classList.toggle('hidden', tab!=='defense');
+                document.getElementById('offense-panel').classList.toggle('hidden', tab!=='offense');
+                if(tab === 'offense') window.MultiGame.deselect();
+            }
+        };
+        window.UI = UI;
 
-        function resetSession(g) {
-            gameState.gold = g; gameState.lives = 20; gameState.wave = 0;
-            gameState.towers = []; gameState.enemies = []; gameState.projectiles = []; gameState.particles = [];
-            gameState.active = false; gameState.spawning = false; gameState.gameOver = false;
-            deselectAll(); updateStatsUI();
-        }
+        // --- Single Player Logic ---
+        const SingleGame = {
+            state: {},
+            
+            start: function(faction) {
+                this.state = {
+                    faction: FACTIONS[faction],
+                    gold: 300, lives: 20, wave: 0, stage: 1,
+                    towers: [], enemies: [], projectiles: [],
+                    active: false, spawning: false, gameOver: false,
+                    path: [], decorations: [], spawnTimer: 0, spawnQueue: [],
+                    selectedType: null, selectedTower: null,
+                    techs: { bow: 0, arrow: 0, spear: 0, sword: 0 } // Tech levels
+                };
+                
+                document.getElementById('ui-sidebar').classList.remove('hidden');
+                document.getElementById('quit-btn-overlay').classList.remove('hidden');
+                document.getElementById('defense-panel').classList.remove('hidden');
+                document.getElementById('offense-panel').classList.add('hidden');
+                document.getElementById('start-btn').classList.remove('hidden');
+                document.getElementById('pvp-tabs').classList.add('hidden');
+                document.getElementById('upgrade-screen').classList.add('hidden');
+                
+                document.getElementById('stat-1-lbl').textContent = "波次";
+                document.getElementById('stat-2-lbl').textContent = "耐久";
+                document.getElementById('faction-label').textContent = this.state.faction.name;
+                document.getElementById('faction-label').style.color = this.state.faction.color;
+                
+                window.UI.setupTowerGrid(faction);
+                this.generateMap();
+                this.updateUI();
+                this.loop();
+            },
+            generateMap: function() {
+                window.soundManager.selectRandomTrack();
+                const diff = this.state.stage; // Path complexity based on stage
+                
+                let path = [];
+                // Simple random walker for path generation
+                // Start
+                let cur = {x: 0, y: Math.floor(Math.random()*(ROWS-4))+2};
+                path.push({...cur});
+                
+                // End Target
+                const endY = Math.floor(Math.random()*(ROWS-4))+2;
+                
+                // Intermediate points
+                // Increase complexity: more zig-zags
+                let colStep = Math.max(2, Math.floor(COLS / (3 + diff))); // Columns per segment
+                
+                for(let cx = colStep; cx < COLS; cx += colStep) {
+                    let nextY = Math.floor(Math.random()*(ROWS-4))+2;
+                    // Move X
+                    while(cur.x < cx && cur.x < COLS-1) { cur.x++; path.push({...cur}); }
+                    // Move Y
+                    while(cur.y !== nextY) { cur.y += (cur.y < nextY ? 1 : -1); path.push({...cur}); }
+                }
+                
+                // Final stretch
+                while(cur.x < COLS-1) { cur.x++; path.push({...cur}); }
+                while(cur.y !== endY) { cur.y += (cur.y < endY ? 1 : -1); path.push({...cur}); }
+                
+                this.state.path = path.map(p => ({x: p.x*GRID_SIZE+20, y: p.y*GRID_SIZE+20}));
+                this.state.gridPath = new Set(path.map(p => `${p.x},${p.y}`));
 
-        class Enemy {
-            constructor(type, diff, path, wave) {
+                // Decor
+                const decorations = [];
+                const decorTypes = ['🌲','🌿','🪨','⛰️'];
+                for(let c=0; c<COLS; c++) {
+                    for(let r=0; r<ROWS; r++) {
+                        if(!this.state.gridPath.has(`${c},${r}`) && Math.random() < 0.15) {
+                            const icon = decorTypes[Math.floor(Math.random()*decorTypes.length)];
+                            decorations.push({x: c*GRID_SIZE+20, y: r*GRID_SIZE+25, icon: icon});
+                        }
+                    }
+                }
+                this.state.decorations = decorations;
+            },
+            startNextWave: function() {
+                if(this.state.active) return;
+                this.state.active = true; this.state.wave++; this.state.spawning = true;
+                let count = 5 + this.state.wave*2;
+                this.state.spawnQueue = [];
+                for(let i=0; i<count; i++) this.state.spawnQueue.push(Math.random()>0.8?'scout':'soldier');
+                if(this.state.wave % 10 === 0) this.state.spawnQueue.push('boss'); // Boss every 10
+                this.state.spawnTimer = 0;
+                this.updateUI();
+            },
+            checkLevelUp: function() {
+                if(this.state.wave > 0 && this.state.wave % 10 === 0) {
+                    this.state.active = false; // Stop game loop for upgrade
+                    this.showUpgradeMenu();
+                } else {
+                    this.state.active = false;
+                    this.updateUI();
+                }
+            },
+            showUpgradeMenu: function() {
+                document.getElementById('game-canvas').classList.add('hidden');
+                document.getElementById('ui-sidebar').classList.add('hidden');
+                document.getElementById('upgrade-screen').classList.remove('hidden');
+                this.updateUpgradeUI();
+            },
+            updateUpgradeUI: function() {
+                document.getElementById('upgrade-gold').textContent = this.state.gold;
+                // Update costs logic (flat 200 for now)
+            },
+            buyTech: function(type) {
+                const cost = 200;
+                if(this.state.gold >= cost) {
+                    this.state.gold -= cost;
+                    this.state.techs[type]++;
+                    this.updateUpgradeUI();
+                    window.soundManager.playBuild();
+                    window.App.toast("升級成功！");
+                } else {
+                    window.App.toast("庫銀不足");
+                }
+            },
+            finishUpgrade: function() {
+                this.state.stage++;
+                this.generateMap(); // New map
+                this.state.towers = []; // Reset towers? User said "next level", implies new setup or keeping?
+                // Usually "Stage" implies reset or continuation. Let's keep towers for "Tower Defense" feel or reset?
+                // The prompt "enter next level" usually means new map. Let's reset towers but give money back?
+                // Or just keep tech. Let's reset map and towers but KEEP TECH and GOLD.
+                // Refund towers
+                // Actually, let's just generate new map and clear towers.
+                
+                document.getElementById('upgrade-screen').classList.add('hidden');
+                document.getElementById('game-canvas').classList.remove('hidden');
+                document.getElementById('ui-sidebar').classList.remove('hidden');
+                this.updateUI();
+                window.App.toast(`進入第 ${this.state.stage} 關！`);
+            },
+            selectTower: function(idx) {
+                this.state.selectedType = idx; this.state.selectedTower = null;
+                this.updateDetail(idx, true);
+                this.updateUI();
+            },
+            handleInput: function(x, y) {
+                const c = Math.floor(x/GRID_SIZE); const r = Math.floor(y/GRID_SIZE);
+                const clicked = this.state.towers.find(t => t.c===c && t.r===r);
+                if(clicked) {
+                    this.state.selectedTower = clicked; this.state.selectedType = null;
+                    this.updateDetail(clicked, false);
+                    this.updateUI();
+                    return;
+                }
+                if(this.state.selectedType !== null) {
+                    const g = this.state.faction.generals[this.state.selectedType];
+                    if(this.state.gold >= g.cost && !this.state.gridPath.has(`${c},${r}`)) {
+                        this.state.gold -= g.cost;
+                        this.state.towers.push(new Tower(c, r, g, this.state.faction.color));
+                        window.soundManager.playBuild();
+                        this.updateUI();
+                    }
+                } else {
+                    this.deselect();
+                }
+            },
+            actionUpgrade: function() {
+                const t = this.state.selectedTower;
+                if(t && this.state.gold >= t.upgradeCost) {
+                    this.state.gold -= t.upgradeCost; t.upgrade();
+                    window.soundManager.playBuild(); this.updateDetail(t, false); this.updateUI();
+                }
+            },
+            actionSell: function() {
+                const t = this.state.selectedTower;
+                if(t) {
+                    this.state.gold += Math.floor(t.totalCost * 0.7);
+                    this.state.towers = this.state.towers.filter(tw => tw !== t);
+                    window.soundManager.playSell(); this.deselect();
+                }
+            },
+            deselect: function() {
+                this.state.selectedType = null; this.state.selectedTower = null;
+                document.getElementById('detail-panel').innerHTML = '<div style="text-align: center; padding: 20px; color:#aaa;">選擇武將查看詳情</div>';
+                document.getElementById('action-area').classList.add('hidden');
+                this.updateUI();
+            },
+            updateDetail: function(obj, isType) {
+                const p = document.getElementById('detail-panel');
+                if(isType) {
+                    const g = this.state.faction.generals[obj];
+                    const arch = ARCHETYPES[g.base];
+                    const stats = {...arch, ...(g.stats||{})};
+                    
+                    // Apply Tech Preview
+                    let dmg = stats.damage;
+                    let rng = stats.range;
+                    let cd = stats.cooldown;
+                    
+                    if(this.state.techs.bow > 0) rng *= (1 + 0.1 * this.state.techs.bow);
+                    
+                    if (['archer', 'magic'].includes(g.base) && this.state.techs.arrow > 0) {
+                        dmg *= (1 + 0.15 * this.state.techs.arrow);
+                    }
+                    if (['fast', 'heavy', 'line', 'splash'].includes(g.base)) {
+                        if (this.state.techs.spear > 0) dmg *= (1 + 0.15 * this.state.techs.spear);
+                        if (this.state.techs.sword > 0) cd /= (1 + 0.1 * this.state.techs.sword);
+                    }
+
+                    const atkSpd = (60 / cd).toFixed(1);
+
+                    p.innerHTML = `<div style="color:#ffb74d;font-weight:bold;border-bottom:1px solid #555;padding-bottom:5px;">${g.icon} ${g.name}</div>
+                    <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;"><span>⚔️ 攻擊: ${Math.floor(dmg)}</span><span>🎯 射程: ${Math.floor(rng)}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:11px;"><span>⚡ 攻速: ${atkSpd}/秒</span></div>
+                    <div style="font-size:10px;margin-top:5px;color:#aaa;">${arch.desc}</div>`;
+                    document.getElementById('action-area').classList.add('hidden');
+                } else {
+                    const atkSpd = (60 / obj.cdM).toFixed(1);
+                    p.innerHTML = `<div style="color:#ffb74d;font-weight:bold;border-bottom:1px solid #555;padding-bottom:5px;">${obj.icon} ${obj.name} Lv.${obj.level}</div>
+                    <div style="display:flex;justify-content:space-between;margin-top:5px;"><span>⚔️ 攻擊: ${obj.dmg}</span><span>🎯 射程: ${obj.rng}</span></div>
+                    <div style="margin-top:2px;"><span>⚡ 攻速: ${atkSpd}/秒</span></div>
+                    <div style="font-size:10px;margin-top:5px;color:#81c784;">升級花費: 💰${obj.upgradeCost}</div>`;
+                    document.getElementById('action-area').classList.remove('hidden');
+                    document.getElementById('btn-upgrade').disabled = this.state.gold < obj.upgradeCost;
+                }
+            },
+            updateUI: function() {
+                document.getElementById('stat-1-val').textContent = `${this.state.wave}/∞`;
+                document.getElementById('stat-2-val').textContent = this.state.lives;
+                document.getElementById('stat-3-val').textContent = this.state.gold;
+                const btn = document.getElementById('start-btn');
+                btn.textContent = this.state.active ? "進攻中..." : "下一波";
+                btn.disabled = this.state.active;
+                
+                const towerBtns = document.querySelectorAll('#tower-grid .tower-btn');
+                towerBtns.forEach((b, i) => {
+                    b.classList.toggle('selected', this.state.selectedType === i);
+                    if(this.state.faction && this.state.faction.generals[i]) {
+                        b.classList.toggle('disabled', this.state.gold < this.state.faction.generals[i].cost);
+                    }
+                });
+            },
+            loop: function() {
+                if(gameMode !== 'single' || this.state.gameOver || !document.getElementById('upgrade-screen').classList.contains('hidden')) return;
+                
+                if(this.state.spawning) {
+                    this.state.spawnTimer++;
+                    if(this.state.spawnTimer > 40 && this.state.spawnQueue.length > 0) {
+                        const type = this.state.spawnQueue.shift();
+                        this.state.enemies.push(new Entity(type, this.state.path, this.state.wave, false));
+                        this.state.spawnTimer = 0;
+                    } else if(this.state.spawnQueue.length === 0) this.state.spawning = false;
+                }
+                
+                this.state.enemies.forEach(e => e.update());
+                this.state.enemies = this.state.enemies.filter(e => e.hp > 0 && !e.finished);
+                
+                // End of Wave Check
+                if(this.state.active && !this.state.spawning && this.state.enemies.length === 0) {
+                    this.state.gold += 50 + this.state.wave*20; // Bonus gold
+                    window.soundManager.playWin();
+                    this.checkLevelUp();
+                }
+
+                this.state.towers.forEach(t => t.update(this.state.enemies, this.state.projectiles));
+                this.state.projectiles.forEach(p => p.update());
+                this.state.projectiles = this.state.projectiles.filter(p => p.active);
+
+                ctx.fillStyle = this.state.faction.bgColor;
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                
+                ctx.font = '20px Arial'; ctx.textAlign='center';
+                this.state.decorations.forEach(d => ctx.fillText(d.icon, d.x, d.y));
+
+                ctx.lineWidth = 30; ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.beginPath();
+                this.state.path.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+                ctx.stroke();
+
+                const end = this.state.path[this.state.path.length-1];
+                ctx.font = '30px Arial'; ctx.fillText('🏰', end.x, end.y+10);
+
+                this.state.towers.forEach(t => t.draw());
+                this.state.enemies.forEach(e => e.draw());
+                this.state.projectiles.forEach(p => p.draw());
+
+                if(this.state.selectedType !== null) {
+                    const g = this.state.faction.generals[this.state.selectedType];
+                    const cx = Math.floor(mousePos.x/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
+                    const cy = Math.floor(mousePos.y/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
+
+                    // Tech applied range calc
+                    const base = ARCHETYPES[g.base];
+                    let range = base.range;
+                    if(g.stats && g.stats.range) range = g.stats.range;
+                    if(this.state.techs.bow > 0) range *= (1 + 0.1 * this.state.techs.bow);
+
+                    ctx.beginPath(); 
+                    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth=2;
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.arc(cx, cy, range, 0, Math.PI*2);
+                    ctx.fill(); ctx.stroke();
+
+                    ctx.save();
+                    ctx.globalAlpha = 0.8;
+                    ctx.fillStyle = this.state.faction.color;
+                    ctx.fillRect(cx-16, cy-16, 32, 32); 
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '18px Arial'; ctx.textAlign = 'center';
+                    ctx.fillText(g.icon, cx, cy+7);
+                    ctx.restore();
+                }
+                
+                if(this.state.selectedTower) {
+                    ctx.beginPath(); ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.lineWidth=2;
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.arc(this.state.selectedTower.x, this.state.selectedTower.y, this.state.selectedTower.rng, 0, Math.PI*2);
+                    ctx.fill(); ctx.stroke();
+                }
+
+                requestAnimationFrame(() => this.loop());
+            }
+        };
+        window.SingleGame = SingleGame;
+
+        // --- Multiplayer Logic ---
+        const MultiGame = {
+            state: {},
+            roomId: null,
+            isHost: false,
+            enemyFactionKey: 'wei',
+            
+            selectFaction: function(faction) {
+                this.state.myFaction = faction;
+            },
+            start: function(mapSeed, isHost, roomId, enemyFactionKey) {
+                this.roomId = roomId;
+                this.isHost = isHost;
+                this.enemyFactionKey = enemyFactionKey;
+                
+                const myF = FACTIONS[this.state.myFaction];
+                const enF = FACTIONS[this.enemyFactionKey];
+                
+                this.state = {
+                    gold: 200, myHp: 50, enemyHp: 50,
+                    towers: [], myUnits: [], enemyUnits: [], projectiles: [],
+                    map: this.generateMap(mapSeed),
+                    myFactionData: myF,
+                    active: true,
+                    incomeTimer: 0,
+                    autoSpawnTimer: 0, // NEW: Auto spawn timer
+                    gameTime: 0,
+                    selectedType: null,
+                    lastUnitCount: 0 
+                };
+
+                document.getElementById('waiting-screen').classList.add('hidden');
+                document.getElementById('ui-sidebar').classList.remove('hidden');
+                document.getElementById('quit-btn-overlay').classList.remove('hidden');
+                document.getElementById('start-btn').classList.add('hidden'); 
+                document.getElementById('pvp-tabs').classList.remove('hidden');
+                
+                document.getElementById('stat-1-lbl').textContent = "我軍";
+                document.getElementById('stat-2-lbl').textContent = "敵軍";
+                document.getElementById('faction-label').textContent = `${myF.name} VS ${enF.name}`;
+                
+                window.UI.setupTowerGrid(this.state.myFaction);
+                window.UI.setupOffenseGrid();
+                window.UI.switchTab('defense');
+                
+                this.startSync();
+                this.loop();
+            },
+            generateMap: function(seed) {
+                const path = [];
+                const start = {x: 2, y: 7};
+                const end = {x: 19, y: 7}; 
+                path.push({...start});
+                
+                const midY = 7 + Math.floor(Math.sin(seed)*5);
+                const wp1 = {x: 7, y: midY};
+                const wp2 = {x: 11, y: 7}; 
+                const wp3 = {x: 15, y: 14-midY}; 
+                
+                const connect = (p1, p2) => {
+                    let c = {...p1};
+                    while(c.x !== p2.x) { c.x += (p2.x>c.x?1:-1); path.push({...c}); }
+                    while(c.y !== p2.y) { c.y += (p2.y>c.y?1:-1); path.push({...c}); }
+                };
+                
+                connect(path[path.length-1], wp1);
+                connect(path[path.length-1], wp2);
+                connect(path[path.length-1], wp3);
+                connect(path[path.length-1], end);
+                
+                const gridPath = new Set(path.map(p => `${p.x},${p.y}`));
+                
+                const decorations = [];
+                const decorTypes = ['🌲','🌿','🪨','⛰️'];
+                for(let c=0; c<COLS; c++) {
+                    for(let r=0; r<ROWS; r++) {
+                        if(!gridPath.has(`${c},${r}`) && Math.random() < 0.15) {
+                            const icon = decorTypes[Math.floor(Math.random()*decorTypes.length)];
+                            decorations.push({x: c*GRID_SIZE+20, y: r*GRID_SIZE+25, icon: icon});
+                        }
+                    }
+                }
+
+                return {
+                    path: path.map(p => ({x: p.x*GRID_SIZE+20, y: p.y*GRID_SIZE+20})),
+                    gridPath: gridPath,
+                    myZone: 10, 
+                    decorations: decorations
+                };
+            },
+            startSync: function() {
+                if(!window.FB) return;
+                const roomRef = window.FB.doc(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles', this.roomId);
+                window.FB.onSnapshot(roomRef, (snap) => {
+                    const data = snap.data();
+                    if(!data) return;
+                    
+                    this.state.enemyHp = this.isHost ? data.guestHp : data.hostHp;
+                    if(this.state.myHp <= 0 || this.state.enemyHp <= 0) this.endGame();
+
+                    const enemySentCount = this.isHost ? data.guestUnits : data.hostUnits;
+                    const queue = this.isHost ? data.guestQueue : data.hostQueue;
+                    
+                    if(enemySentCount > this.state.lastUnitCount && queue) {
+                        for(let i=this.state.lastUnitCount; i<enemySentCount; i++) {
+                            const uId = queue[i];
+                            this.spawnUnit(uId, false);
+                        }
+                        this.state.lastUnitCount = enemySentCount;
+                    }
+                    this.updateUI();
+                });
+            },
+            sendUnit: function(uId) {
+                const u = PVP_UNITS.find(unit => unit.id === uId);
+                if(this.state.gold >= u.cost) {
+                    this.state.gold -= u.cost;
+                    window.soundManager.playBuild(); 
+                    this.spawnUnit(uId, true);
+                    
+                    if(!window.FB) return;
+                    const roomRef = window.FB.doc(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles', this.roomId);
+                    const payload = {};
+                    const fieldQ = this.isHost ? 'hostQueue' : 'guestQueue';
+                    const fieldC = this.isHost ? 'hostUnits' : 'guestUnits';
+                    payload[fieldQ] = window.FB.arrayUnion(uId);
+                    payload[fieldC] = window.FB.increment(1);
+                    window.FB.updateDoc(roomRef, payload);
+                } else {
+                    window.App.toast("庫銀不足");
+                }
+            },
+            spawnUnit: function(uId, isMine) {
+                const def = PVP_UNITS.find(u => u.id === uId);
+                const path = this.state.map.path;
+                let startIdx, endIdx, color;
+                if (this.isHost) {
+                     startIdx = isMine ? 0 : path.length-1;
+                     endIdx = isMine ? path.length-1 : 0;
+                     color = isMine ? this.state.myFactionData.color : FACTIONS[this.enemyFactionKey].color;
+                } else {
+                     startIdx = isMine ? path.length-1 : 0;
+                     endIdx = isMine ? 0 : path.length-1;
+                     color = isMine ? this.state.myFactionData.color : FACTIONS[this.enemyFactionKey].color;
+                }
+                
+                const stats = isMine ? this.state.myFactionData.pvpBonus : FACTIONS[this.enemyFactionKey].pvpBonus;
+                
+                const unit = new Entity('pvp_unit', path, 0, isMine); 
+                unit.overridePVP(def, startIdx, endIdx, color, stats);
+                if(isMine) this.state.myUnits.push(unit);
+                else this.state.enemyUnits.push(unit);
+            },
+            selectTower: function(idx) {
+                this.state.selectedType = idx;
+                window.App.toast("點擊我方領地(左側)佈署");
+            },
+            handleInput: function(x, y) {
+                const c = Math.floor(x/GRID_SIZE); const r = Math.floor(y/GRID_SIZE);
+                
+                const isMyTerritory = this.isHost ? (c <= 10) : (c >= 11);
+                
+                if(!isMyTerritory) {
+                    window.App.toast("只能在己方領地建設");
+                    return;
+                }
+                
+                if(this.state.selectedType !== null) {
+                     const g = this.state.myFactionData.generals[this.state.selectedType];
+                     if(this.state.gold >= g.cost && !this.state.map.gridPath.has(`${c},${r}`)) {
+                         this.state.gold -= g.cost;
+                         this.state.towers.push(new Tower(c, r, g, this.state.myFactionData.color));
+                         window.soundManager.playBuild();
+                         this.updateUI();
+                     } else if (this.state.gold < g.cost) window.App.toast("庫銀不足");
+                }
+            },
+            deselect: function() { this.state.selectedType = null; },
+            updateUI: function() {
+                document.getElementById('stat-1-val').textContent = this.state.myHp;
+                document.getElementById('stat-2-val').textContent = this.state.enemyHp;
+                document.getElementById('stat-3-val').textContent = Math.floor(this.state.gold);
+            },
+            loop: function() {
+                if(gameMode !== 'multi' || !this.state.active) return;
+                
+                this.state.incomeTimer++;
+                if(this.state.incomeTimer > 60) { this.state.gold += 5; this.state.incomeTimer = 0; this.updateUI(); }
+                
+                // Auto Spawn Logic (8s = 480 frames approx at 60fps)
+                this.state.autoSpawnTimer++;
+                this.state.gameTime++;
+                if(this.state.autoSpawnTimer > 480) {
+                    this.state.autoSpawnTimer = 0;
+                    // Spawn amount based on game time (increases every minute)
+                    const amount = 1 + Math.floor(this.state.gameTime / 3600); 
+                    for(let k=0; k<amount; k++) {
+                        // Spawn for ME
+                        this.spawnUnit('soldier', true);
+                        // Spawn for ENEMY (visual only, logic handled by their client mirroring this)
+                        // Actually, since we don't sync auto-spawns, both clients run this same logic.
+                        // So I spawn mine (true) and theirs (false) locally.
+                        // Wait, if I spawn theirs locally, does it duplicate? 
+                        // No, `sync` only syncs `guestUnits` (manual queue). Auto spawns are local logic.
+                        // Perfect.
+                        this.spawnUnit('soldier', false);
+                    }
+                }
+
+                [...this.state.myUnits, ...this.state.enemyUnits].forEach(u => {
+                    const reach = u.updatePVP(this.state.map.path);
+                    if(reach) {
+                        u.finished = true;
+                        if(!u.isMine) {
+                            this.state.myHp -= 1;
+                            window.soundManager.playLose(); 
+                            this.syncHp();
+                        }
+                    }
+                });
+                
+                this.state.myUnits = this.state.myUnits.filter(u => !u.finished && u.hp > 0);
+                this.state.enemyUnits = this.state.enemyUnits.filter(u => !u.finished && u.hp > 0);
+                
+                this.state.towers.forEach(t => t.update(this.state.enemyUnits, this.state.projectiles));
+                this.state.projectiles.forEach(p => p.update());
+                this.state.projectiles = this.state.projectiles.filter(p => p.active);
+                
+                ctx.fillStyle = '#1a100e';
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                
+                ctx.fillStyle = this.state.myFactionData.bgColor; 
+                if(this.isHost) ctx.fillRect(0,0,canvas.width/2, canvas.height);
+                else ctx.fillRect(canvas.width/2,0,canvas.width/2, canvas.height);
+                
+                ctx.fillStyle = FACTIONS[this.enemyFactionKey].bgColor; 
+                if(this.isHost) ctx.fillRect(canvas.width/2,0,canvas.width/2, canvas.height);
+                else ctx.fillRect(0,0,canvas.width/2, canvas.height);
+                
+                ctx.font = '20px Arial'; ctx.textAlign='center'; ctx.fillStyle='#000';
+                this.state.map.decorations.forEach(d => ctx.fillText(d.icon, d.x, d.y));
+
+                ctx.lineWidth = 30; ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.beginPath();
+                this.state.map.path.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+                ctx.stroke();
+                
+                const startP = this.state.map.path[0];
+                const endP = this.state.map.path[this.state.map.path.length-1];
+                ctx.font = '30px Arial'; 
+                ctx.fillText('🏰', startP.x, startP.y+10);
+                ctx.fillText('🏰', endP.x, endP.y+10);
+
+                this.state.towers.forEach(t => t.draw());
+                this.state.myUnits.forEach(u => u.draw());
+                this.state.enemyUnits.forEach(u => u.draw());
+                this.state.projectiles.forEach(p => p.draw());
+                
+                if(this.state.selectedType !== null) {
+                    const g = this.state.myFactionData.generals[this.state.selectedType];
+                    const base = ARCHETYPES[g.base];
+                    const stats = {...base, ...(g.stats||{})};
+                    const range = stats.range;
+                    const cx = Math.floor(mousePos.x/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
+                    const cy = Math.floor(mousePos.y/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
+                    
+                    ctx.beginPath(); ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.lineWidth=2;
+                    ctx.fillStyle='rgba(255,255,255,0.2)';
+                    ctx.arc(cx, cy, range, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+                    ctx.save();
+                    ctx.globalAlpha = 0.8;
+                    ctx.fillStyle = this.state.myFactionData.color;
+                    ctx.fillRect(cx-16, cy-16, 32, 32); 
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '18px Arial'; ctx.textAlign = 'center';
+                    ctx.fillText(g.icon, cx, cy+7);
+                    ctx.restore();
+                }
+
+                requestAnimationFrame(() => this.loop());
+            },
+            syncHp: function() {
+                if(!window.FB) return;
+                const roomRef = window.FB.doc(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles', this.roomId);
+                const field = this.isHost ? 'hostHp' : 'guestHp';
+                window.FB.updateDoc(roomRef, { [field]: this.state.myHp });
+                this.updateUI();
+                if(this.state.myHp <= 0) this.endGame();
+            },
+            endGame: function() {
+                this.state.active = false;
+                const win = this.state.myHp > 0;
+                document.getElementById('end-screen').classList.remove('hidden');
+                document.getElementById('end-title').textContent = win ? "大獲全勝" : "城池失守";
+                document.getElementById('end-desc').textContent = win ? "敵軍潰敗，天下歸心！" : "勝敗兵家常事，大俠請重新來過。";
+                if(win) window.soundManager.playWin(); else window.soundManager.playLose();
+            }
+        };
+        window.MultiGame = MultiGame;
+
+        // --- Shared Classes ---
+        class Entity {
+            constructor(type, path, wave, isMine) {
                 this.path = path; this.idx = 0; this.x = path[0].x; this.y = path[0].y;
-                const finalMult = Math.pow(1.35, diff-1) * (1 + wave*0.12);
-                const rMult = Math.pow(1.18, diff-1);
-                this.baseHp = type==='boss'?900:type==='heavy'?140:45;
-                this.speed = type==='boss'?0.6:type==='scout'?2.8:1.8;
-                this.icon = type==='boss'?'\u{1F479}':type==='scout'?'\u{1F406}':'\u{1F482}';
-                this.maxHp = Math.floor(this.baseHp * finalMult); this.hp = this.maxHp;
-                this.gold = Math.floor((type==='boss'?350:10) * rMult);
+                this.finished = false; this.isMine = isMine;
+                
+                if (type !== 'pvp_unit') {
+                    // Adjusted Difficulty: More Fun, Less Grind
+                    // Slower scaling to match general stats
+                    let mult = 1.0 + (wave * 0.05); // Reduced linear growth
+                    mult *= Math.pow(1.03, wave);   // Reduced exponential growth (was 1.08)
+                    
+                    if (wave <= 5) mult *= 0.4;     // Easy start
+                    else if (wave <= 10) mult *= 0.7; // Mid transition
+                    
+                    // Reduced base HP to ensure killability
+                    this.baseHp = type==='boss'? 700 : type==='soldier'? 35 : 18;
+                    this.maxHp = Math.floor(this.baseHp * mult);
+                    
+                    // Cap minimum HP to 1 to avoid bugs
+                    this.maxHp = Math.max(5, this.maxHp);
+                    
+                    this.hp = this.maxHp;
+                    // Slightly slower scouts to prevent cheap leaks
+                    this.speed = type==='boss'?0.5 : type==='scout'?2.2 : 1.3;
+                    
+                    this.icon = type==='boss'?'\u{1F479}':type==='scout'?'\u{1F406}':'\u{1F482}';
+                    // Increased rewards to fuel economy
+                    this.reward = type==='boss'?500 : 20;
+                    this.mode = 'single';
+                }
                 this.froz = 0; this.burn = 0; this.slowF = 1;
             }
+            overridePVP(def, startIdx, endIdx, color, stats) {
+                this.mode = 'pvp';
+                this.maxHp = def.hp * stats.hp;
+                this.hp = this.maxHp;
+                this.speed = def.speed * stats.speed;
+                this.dmg = def.dmg * stats.dmg;
+                this.icon = def.icon;
+                this.reward = def.reward;
+                this.color = color;
+                
+                this.idx = startIdx;
+                this.targetIdx = endIdx;
+                this.x = this.path[this.idx].x;
+                this.y = this.path[this.idx].y;
+            }
             update() {
-                let s = this.speed * (this.froz > 0 ? this.slowF : 1);
-                if(this.burn > 0) { if(gameState.spawnTimer%25===0) this.takeDamage(4); this.burn--; }
+                let s = this.speed * (this.froz > 0 ? 0.5 : 1);
+                if(this.burn > 0) { this.hp -= 0.5; this.burn--; }
                 if(this.froz > 0) this.froz--;
+                
                 const t = this.path[this.idx+1];
                 if(t) {
                     const dx = t.x-this.x; const dy = t.y-this.y; const d = Math.hypot(dx,dy);
-                    if(d < s) { this.x=t.x; this.y=t.y; this.idx++; if(this.idx>=this.path.length-1) this.reachEnd(); }
+                    if(d < s) { this.x=t.x; this.y=t.y; this.idx++; if(this.idx>=this.path.length-1) this.reach(); }
                     else { this.x += (dx/d)*s; this.y += (dy/d)*s; }
                 }
             }
-            draw() {
-                ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.arc(this.x, this.y, 14, 0, 7); ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.font = '18px Arial'; ctx.textAlign='center'; ctx.fillText(this.icon, this.x, this.y+7);
-                ctx.fillStyle = '#333'; ctx.fillRect(this.x-12, this.y-18, 24, 3);
-                ctx.fillStyle = 'lime'; ctx.fillRect(this.x-12, this.y-18, 24*(this.hp/this.maxHp), 3);
+            updatePVP(pathRef) {
+                let s = this.speed * (this.froz > 0 ? 0.5 : 1);
+                if(this.froz > 0) this.froz--;
+                
+                const direction = this.targetIdx > this.idx ? 1 : -1;
+                const nextIdx = this.idx + direction;
+                
+                if (nextIdx < 0 || nextIdx >= pathRef.length) return true; 
+                
+                const t = pathRef[nextIdx];
+                const dx = t.x - this.x;
+                const dy = t.y - this.y;
+                const d = Math.hypot(dx, dy);
+                
+                if (d < s) {
+                    this.x = t.x; this.y = t.y; this.idx = nextIdx;
+                    if (this.idx === this.targetIdx) return true;
+                } else {
+                    this.x += (dx/d)*s; this.y += (dy/d)*s;
+                }
+                return false;
             }
-            takeDamage(a) { this.hp -= a; if(this.hp<=0) { gameState.gold += this.gold; updateStatsUI(); soundManager.playHit(); return true; } return false; }
-            reachEnd() { 
-                gameState.lives--; updateStatsUI(); 
-                if(gameState.lives <= 0) gameOver();
-                else { this.idx = 0; this.x = this.path[0].x; this.y = this.path[0].y; }
+            reach() {
+                if(this.mode === 'single') {
+                    window.SingleGame.state.lives--;
+                    window.soundManager.playLose();
+                    window.SingleGame.updateUI();
+                    
+                    if(window.SingleGame.state.lives <= 0) {
+                        this.finished = true;
+                        window.SingleGame.state.gameOver = true;
+                        document.getElementById('end-screen').classList.remove('hidden');
+                        document.getElementById('end-title').textContent = "城池失守";
+                        document.getElementById('end-desc').textContent = "敗軍之將，不可言勇";
+                    } else {
+                        // Loop logic: Reset position to start, keep current HP
+                        this.idx = 0;
+                        this.x = this.path[0].x;
+                        this.y = this.path[0].y;
+                        window.App.toast("敵軍突破防線，再次進攻！");
+                    }
+                } else {
+                    this.finished = true; // PVP logic (disappear)
+                }
+            }
+            takeDamage(amt) {
+                this.hp -= amt;
+                if(this.hp <= 0) {
+                    window.soundManager.playHit();
+                    if(this.mode === 'single') {
+                         window.SingleGame.state.gold += this.reward;
+                         window.SingleGame.updateUI();
+                    } else if (this.mode === 'pvp' && !this.isMine) {
+                         window.MultiGame.state.gold += this.reward;
+                         window.MultiGame.updateUI();
+                    }
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = '#333'; ctx.fillRect(-12, -20, 24, 4);
+                ctx.fillStyle = this.isMine ? '#4caf50' : (this.mode==='single'?'lime':'#f44336'); 
+                ctx.fillRect(-12, -20, 24*(Math.max(0,this.hp)/this.maxHp), 4);
+                
+                ctx.shadowBlur = 5; ctx.shadowColor = 'black';
+                ctx.font = '20px Arial'; ctx.textAlign='center'; 
+                ctx.fillText(this.icon, 0, 8);
+                ctx.restore();
             }
         }
 
         class Tower {
-            constructor(c, r, gi) {
+            constructor(c, r, g, color) {
                 this.c=c; this.r=r; this.x=c*40+20; this.y=r*40+20;
-                const g = gameState.factionData.generals[gi]; const b = ARCHETYPES[g.base];
-                const s = {...b, ...(g.stats||{})};
-                this.name=g.name; this.icon=g.icon; this.color=g.color; this.level=1;
-                this.dmg=s.damage; this.rng=s.range; this.cdM=s.cooldown; this.type=s.type;
-                this.eff=g.effect||s.effect; this.cd=0; this.slowF=0.85; this.baseCost=g.cost;
-                this.splashRadius = s.splashRadius || 60;
+                this.name=g.name; this.icon=g.icon; this.color=color; this.level=1;
+                this.totalCost = g.cost; this.upgradeCost = Math.floor(g.cost*0.8);
+                
+                const base = ARCHETYPES[g.base];
+                const stats = {...base, ...(g.stats||{})};
+                
+                // Single Player Tech Bonus Application (at construction time)
+                let dmg = stats.damage;
+                let rng = stats.range;
+                let cd = stats.cooldown;
+                
+                if (window.SingleGame && window.SingleGame.state.techs) {
+                    const techs = window.SingleGame.state.techs;
+                    if (techs.bow > 0) rng *= (1 + 0.1 * techs.bow);
+                    if (['archer', 'magic'].includes(g.base) && techs.arrow > 0) dmg *= (1 + 0.15 * techs.arrow);
+                    if (['fast', 'heavy', 'line', 'splash'].includes(g.base)) {
+                        if (techs.spear > 0) dmg *= (1 + 0.15 * techs.spear);
+                        if (techs.sword > 0) cd /= (1 + 0.1 * techs.sword);
+                    }
+                }
+
+                this.dmg = Math.floor(dmg); 
+                this.rng = Math.floor(rng); 
+                this.cdM = Math.floor(cd);
+                this.type=stats.type; this.eff=g.effect||stats.effect; 
+                this.cd=0;
             }
-            update() {
+            upgrade() {
+                this.level++; this.dmg=Math.floor(this.dmg*1.4); this.rng=Math.floor(this.rng*1.1);
+                this.totalCost += this.upgradeCost; this.upgradeCost = Math.floor(this.totalCost*0.6);
+            }
+            update(enemies, projectiles) {
                 if(this.cd > 0) this.cd--;
-                let target = gameState.enemies.find(e => Math.hypot(e.x-this.x, e.y-this.y) <= this.rng);
-                if(target && this.cd<=0) {
-                    soundManager.playShoot();
-                    gameState.projectiles.push({
-                        x:this.x, y:this.y, target, dmg:this.dmg, color:this.color, type:this.type, 
-                        eff:this.eff, slowF:this.slowF, active:true, 
-                        angle: Math.atan2(target.y-this.y, target.x-this.x), 
-                        splashRadius: this.splashRadius
+                const target = enemies.find(e => Math.hypot(e.x-this.x, e.y-this.y) <= this.rng);
+                if(target && this.cd <= 0) {
+                    window.soundManager.playShoot();
+                    projectiles.push({
+                        x:this.x, y:this.y, target:target, dmg:this.dmg, color:this.color,
+                        type:this.type, eff:this.eff, active:true,
+                        update: function() {
+                            if(!this.target || this.target.hp<=0) { this.active=false; return; }
+                            const dx = this.target.x-this.x; const dy = this.target.y-this.y;
+                            const d = Math.hypot(dx,dy);
+                            if(d < 12) {
+                                this.active=false;
+                                if(this.type === 'splash' || this.type === 'magic') {
+                                    enemies.forEach(e => {
+                                        if(Math.hypot(e.x-this.target.x, e.y-this.target.y) < 60) this.hit(e);
+                                    });
+                                } else this.hit(this.target);
+                            } else {
+                                this.x += (dx/d)*15; this.y += (dy/d)*15;
+                            }
+                        },
+                        hit: function(e) {
+                            e.takeDamage(this.dmg);
+                            if(this.eff === 'slow') e.froz = 60;
+                            if(this.eff === 'burn') e.burn = 100;
+                            if(this.eff === 'stun' && Math.random()>0.7) e.froz = 30;
+                        },
+                        draw: function() {
+                            ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x,this.y,4,0,7); ctx.fill();
+                        }
                     });
                     this.cd = this.cdM;
                 }
             }
             draw() {
                 ctx.fillStyle = '#3e2723'; ctx.fillRect(this.x-16, this.y-16, 32, 32);
-                if(gameState.selectedPlacedTower === this) {
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.rng, 0, Math.PI * 2); ctx.stroke();
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'; ctx.fill();
-                }
                 ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x,this.y,15,0,7); ctx.fill();
                 ctx.fillStyle='#fff'; ctx.font='18px Arial'; ctx.textAlign='center'; ctx.fillText(this.icon, this.x, this.y+7);
                 if(this.level > 1) { ctx.fillStyle='#ffd700'; for(let i=0; i<this.level; i++) ctx.fillRect(this.x-10+(i*5), this.y-22, 3,3); }
             }
-            upgrade() {
-                const cost = Math.floor(this.baseCost*0.8);
-                if(gameState.gold >= cost) {
-                    gameState.gold -= cost; this.level++; 
-                    this.dmg = Math.floor(this.dmg*1.4); this.rng = Math.floor(this.rng*1.1);
-                    if(this.eff==='slow') this.slowF = Math.max(0.4, this.slowF-0.05);
-                    this.baseCost += cost; soundManager.playBuild(); updateDetailPanel(); updateStatsUI();
-                }
-            }
         }
 
-        function selectTowerType(i) {
-            gameState.selectedTowerType=i; gameState.selectedPlacedTower=null;
-            const g = gameState.factionData.generals[i]; const b = ARCHETYPES[g.base]; const s = {...b, ...(g.stats||{})};
-            const detail = document.getElementById('detail-panel');
-            if(detail) detail.innerHTML = `
-                <div class="detail-title"><span>${g.icon} ${g.name}</span><span>💰${g.cost}</span></div>
-                <div class="detail-grid">
-                    <div class="detail-item"><span class="detail-label">攻擊</span><span class="detail-val">${s.damage}</span></div>
-                    <div class="detail-item"><span class="detail-label">範圍</span><span class="detail-val">${s.range}</span></div>
-                </div>
-                <div class="detail-desc">${b.desc}</div>`;
-            const act = document.getElementById('action-area'); if(act) act.classList.add('hidden');
-            updateStatsUI();
-        }
-
-        function selectPlacedTower(t) {
-            gameState.selectedPlacedTower=t; gameState.selectedTowerType=null; updateDetailPanel(); updateStatsUI();
-        }
-
-        function updateDetailPanel() {
-            const t = gameState.selectedPlacedTower; if(!t) return;
-            const detail = document.getElementById('detail-panel'); if(!detail) return;
-            const upg = Math.floor(t.baseCost*0.8);
-            detail.innerHTML = `
-                <div class="detail-title"><span>${t.icon} ${t.name}</span><span>Lv.${t.level}</span></div>
-                <div class="detail-grid">
-                    <div class="detail-item"><span class="detail-label">傷害</span><span class="detail-val">${t.dmg}</span></div>
-                    <div class="detail-item"><span class="detail-label">範圍</span><span class="detail-val">${t.rng}</span></div>
-                </div>
-                <div class="upgrade-preview">晉升: 傷害 ➤ ${Math.floor(t.dmg*1.4)}, 範圍 ➤ ${Math.floor(t.rng*1.1)}</div>`;
-            const costUpg = document.getElementById('cost-upg'); if(costUpg) costUpg.textContent = `💰${upg}`;
-            const act = document.getElementById('action-area'); if(act) act.classList.remove('hidden');
-            const btnUpg = document.getElementById('btn-upgrade'); if(btnUpg) btnUpg.disabled = gameState.gold < upg;
-        }
-
-        function deselectAll() {
-            gameState.selectedTowerType=null; gameState.selectedPlacedTower=null;
-            const detail = document.getElementById('detail-panel');
-            if(detail) detail.innerHTML = '<div style="text-align:center;color:#757575;padding:20px;">選擇武將查看詳情</div>';
-            const act = document.getElementById('action-area'); if(act) act.classList.add('hidden');
-            updateStatsUI();
-        }
-
-        function updateStatsUI() {
-            const wav = document.getElementById('wave-display'); if(wav) wav.textContent = `${gameState.wave}/5`;
-            const liv = document.getElementById('lives-display'); if(liv) liv.textContent = gameState.lives;
-            const gol = document.getElementById('gold-display'); if(gol) gol.textContent = gameState.gold;
-            const btns = document.querySelectorAll('.tower-btn');
-            btns.forEach((b, i) => {
-                b.classList.toggle('selected', gameState.selectedTowerType===i);
-                if (gameState.factionData) b.classList.toggle('disabled', gameState.gold < gameState.factionData.generals[i].cost);
-            });
-            const s = document.getElementById('start-btn');
-            if(s) {
-                if(gameState.active) { s.disabled=true; s.textContent="進攻中..."; }
-                else { s.disabled=false; s.textContent = gameState.wave===4 ? "BOSS 來襲" : "開始戰鬥"; }
-            }
-        }
-
-        function startNextWave() {
-            if(gameState.active) return;
-            gameState.active=true; gameState.wave++; gameState.spawning=true;
-            let count = 5 + gameState.wave*2;
-            gameState.enemiesToSpawn = [];
-            for(let i=0; i<count; i++) gameState.enemiesToSpawn.push(Math.random() > 0.8 ? 'scout' : (gameState.wave > 3 && Math.random() > 0.8 ? 'heavy' : 'soldier'));
-            if(gameState.wave===5) gameState.enemiesToSpawn.push('boss');
-            gameState.spawnTimer=0; updateStatsUI();
-        }
-
-        function nextLevel() {
-            gameState.difficultyLevel++; generateMap();
-            resetSession(gameState.gold + 250 + gameState.difficultyLevel*50);
-            document.getElementById('level-screen').classList.add('hidden');
-        }
-
-        function gameOver() {
-            soundManager.playLose(); gameState.gameOver=true;
-            const end = document.getElementById('end-screen'); if(end) end.classList.remove('hidden');
-            const desc = document.getElementById('end-desc'); if(desc) desc.textContent = `霸業在第 ${gameState.difficultyLevel} 關嘎然而止。`;
-        }
-
-        function update() {
-            if(gameState.gameOver || !gameState.active) return;
-            if(gameState.spawning) {
-                gameState.spawnTimer++;
-                if(gameState.spawnTimer > 40 && gameState.enemiesToSpawn.length > 0) {
-                    gameState.enemies.push(new Enemy(gameState.enemiesToSpawn.shift(), gameState.difficultyLevel, gameState.allPaths[0], gameState.wave));
-                    gameState.spawnTimer=0;
-                } else if(gameState.enemiesToSpawn.length === 0) gameState.spawning=false;
-            }
-            gameState.enemies.forEach(e => e.update()); 
-            gameState.enemies = gameState.enemies.filter(e => e.hp > 0);
-            gameState.towers.forEach(t => t.update());
-            gameState.projectiles.forEach(p => {
-                if(!p.target || p.target.hp<=0) { p.active=false; return; }
-                const dx = p.target.x-p.x; const dy = p.target.y-p.y; const d = Math.hypot(dx,dy);
-                if(p.type === 'line') {
-                    p.x += Math.cos(p.angle || 0) * 15; p.y += Math.sin(p.angle || 0) * 15;
-                    gameState.enemies.forEach(e => { if(Math.hypot(e.x-p.x, e.y-p.y) < 15) e.takeDamage(p.dmg); });
-                    if(p.x < 0 || p.x > 880 || p.y < 0 || p.y > 700) p.active=false;
-                } else {
-                    if(d < 12) {
-                        p.active=false;
-                        const targets = (p.type === 'splash' || p.type === 'magic') ? gameState.enemies.filter(e => Math.hypot(e.x - p.target.x, e.y - p.target.y) < (p.splashRadius||60)) : [p.target];
-                        targets.forEach(e => {
-                            e.takeDamage(p.dmg);
-                            if(p.eff==='slow') { e.froz=90; e.slowF=p.slowF; }
-                            if(p.eff==='burn') e.burn=120;
-                            if(p.eff==='stun' && Math.random()>0.7) e.froz=30; 
+        // --- Lobby Logic ---
+        const Lobby = {
+            init: () => {
+                if(!window.FB) return;
+                const q = window.FB.collection(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles');
+                window.FB.onSnapshot(q, (snapshot) => {
+                    const list = document.getElementById('room-list');
+                    list.innerHTML = '';
+                    const rooms = [];
+                    snapshot.forEach(d => { if(d.data().status === 'waiting') rooms.push({id:d.id, ...d.data()}); });
+                    
+                    if(rooms.length === 0) list.innerHTML = '<div style="padding:20px; color:#aaa; text-align:center;">無戰役進行中</div>';
+                    else {
+                        rooms.forEach(r => {
+                            const d = document.createElement('div'); d.className = 'room-item';
+                            d.innerHTML = `<span>⚔️ ${r.name}</span><span style="font-size:12px;color:#ccc;">${FACTIONS[r.hostFaction].name}</span>`;
+                            d.onclick = () => window.Lobby.joinRoom(r);
+                            list.appendChild(d);
                         });
-                    } else { p.x += (dx/d)*12; p.y += (dy/d)*12; }
+                    }
+                });
+            },
+            createRoom: async () => {
+                // Check if Firebase config is missing (local environment)
+                if(!window.FB || !window.FB.firebaseConfig || Object.keys(window.FB.firebaseConfig).length === 0) {
+                    alert("多人連線功能需要後端伺服器支援。\n本地環境或複製的檔案無法連接資料庫，因此無法創建房間。\n請在支援的線上環境遊玩。");
+                    return;
                 }
-            });
-            gameState.projectiles = gameState.projectiles.filter(p => p.active);
-            if(!gameState.spawning && gameState.enemies.length===0) {
-                gameState.active=false;
-                if(gameState.wave===5) {
-                    soundManager.playWin(); 
-                    const rew = document.getElementById('level-reward'); if(rew) rew.textContent = `獲得獎勵金 💰${250 + gameState.difficultyLevel*50}`;
-                    const lvl = document.getElementById('level-screen'); if(lvl) lvl.classList.remove('hidden');
-                } else { gameState.gold += 50; updateStatsUI(); }
-            }
-        }
 
-        function draw() {
-            ctx.fillStyle = gameState.factionData ? gameState.factionData.bgColor : '#1a100e';
-            ctx.fillRect(0,0,880,700);
-            if(!gameState.factionData) return;
-            gameState.decorations.forEach(d => { ctx.save(); ctx.translate(d.x,d.y); ctx.rotate(d.rot); ctx.font='20px serif'; ctx.fillText(d.icon,0,0); ctx.restore(); });
-            ctx.lineWidth=30; ctx.lineCap='round'; ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.beginPath();
-            gameState.allPaths[0].forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y)); ctx.stroke();
-            
-            const endP = gameState.allPaths[0][gameState.allPaths[0].length-1];
-            ctx.font = '36px Arial'; ctx.textAlign='center'; ctx.fillText('\u{1F3F0}', endP.x, endP.y+10);
-            
-            gameState.towers.forEach(t => t.draw()); gameState.enemies.forEach(e => e.draw());
-            gameState.projectiles.forEach(p => { ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,7); ctx.fill(); });
-            
-            // Draw Ghost Tower Range
-            if(gameState.selectedTowerType!==null) {
-                const c = Math.floor(gameState.mouseX/40); const r = Math.floor(gameState.mouseY/40);
-                const x = c*40+20; const y = r*40+20;
-                const gen = gameState.factionData.generals[gameState.selectedTowerType];
-                const baseRange = (ARCHETYPES[gen.base].stats?.range || ARCHETYPES[gen.base].range) * (gen.stats?.range_mult || 1);
-                const finalRange = gen.stats?.range || baseRange;
+                if(!window.FB) return;
+                const name = document.getElementById('room-name-input').value.trim() || `Battle ${Math.floor(Math.random()*100)}`;
+                document.getElementById('lobby-screen').classList.add('hidden');
+                document.getElementById('menu-screen').classList.remove('hidden');
                 
-                ctx.globalAlpha=0.3; ctx.fillStyle='green'; ctx.fillRect(c*40, r*40, 40, 40); 
-                ctx.globalAlpha=0.15; ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(x,y,finalRange,0,7); ctx.fill();
-                ctx.globalAlpha=1;
+                window.MultiGame.selectFaction = async (faction) => {
+                    const roomRef = window.FB.doc(window.FB.collection(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles'));
+                    const mapSeed = Math.random() * 100;
+                    await window.FB.setDoc(roomRef, {
+                        name, status: 'waiting', host: window.currentUser.uid, hostFaction: faction,
+                        mapSeed, createdAt: Date.now(),
+                        hostHp: 50, guestHp: 50, hostUnits: 0, guestUnits: 0
+                    });
+                    
+                    document.getElementById('menu-screen').classList.add('hidden');
+                    document.getElementById('waiting-screen').classList.remove('hidden');
+                    document.getElementById('room-id-display').textContent = "房號: " + roomRef.id.substring(0,5);
+                    
+                    const unsub = window.FB.onSnapshot(roomRef, (snap) => {
+                        const d = snap.data();
+                        if(d && d.guest) {
+                            unsub();
+                            window.MultiGame.start(mapSeed, true, roomRef.id, d.guestFaction);
+                        }
+                    });
+                };
+            },
+            joinRoom: async (room) => {
+                if(!window.FB) return;
+                document.getElementById('lobby-screen').classList.add('hidden');
+                document.getElementById('menu-screen').classList.remove('hidden');
+                
+                window.MultiGame.selectFaction = async (faction) => {
+                    const roomRef = window.FB.doc(window.FB.db, 'artifacts', window.FB.appId, 'public', 'data', 'battles', room.id);
+                    await window.FB.updateDoc(roomRef, {
+                        guest: window.currentUser.uid, guestFaction: faction, status: 'playing', startTime: Date.now()
+                    });
+                    document.getElementById('menu-screen').classList.add('hidden');
+                    window.MultiGame.start(room.mapSeed, false, room.id, room.hostFaction);
+                };
             }
-        }
+        };
+        window.Lobby = Lobby;
 
-        function actionUpgrade() { if(gameState.selectedPlacedTower) gameState.selectedPlacedTower.upgrade(); }
-        function actionSell() {
-            if(gameState.selectedPlacedTower) {
-                gameState.gold += Math.floor(gameState.selectedPlacedTower.baseCost*0.6);
-                gameState.towers = gameState.towers.filter(t => t !== gameState.selectedPlacedTower);
-                soundManager.playSell(); deselectAll();
-            }
-        }
-
+        // --- Input Handling ---
         function getPos(e) {
-            const r = canvas.getBoundingClientRect(); const sX = 880/r.width; const sY = 700/r.height;
+            const r = canvas.getBoundingClientRect(); const sX = canvas.width/r.width; const sY = canvas.height/r.height;
             const cX = e.touches ? e.touches[0].clientX : e.clientX; const cY = e.touches ? e.touches[0].clientY : e.clientY;
             return { x: (cX-r.left)*sX, y: (cY-r.top)*sY };
         }
+        canvas.addEventListener('mousedown', (e) => {
+            const p = getPos(e);
+            if(gameMode === 'single') window.SingleGame.handleInput(p.x, p.y);
+            else window.MultiGame.handleInput(p.x, p.y);
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            const p = getPos(e);
+            mousePos = p;
+        });
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); const p = getPos(e);
+            if(gameMode === 'single') window.SingleGame.handleInput(p.x, p.y);
+            else window.MultiGame.handleInput(p.x, p.y);
+        }, {passive:false});
 
-        function handleIn(e) {
-            if(gameState.gameOver || !gameState.factionData) return;
-            const p = getPos(e); gameState.mouseX=p.x; gameState.mouseY=p.y;
-            const c = Math.floor(p.x/40); const r = Math.floor(p.y/40);
-            const clicked = gameState.towers.find(t => t.c===c && t.r===r);
-            if (clicked) { selectPlacedTower(clicked); return; }
-            if (gameState.selectedTowerType!==null) {
-                const g = gameState.factionData.generals[gameState.selectedTowerType];
-                if(gameState.gold >= g.cost && !gameState.roadTiles.some(rt => Math.floor(rt.x/40)===c && Math.floor(rt.y/40)===r)) {
-                    gameState.gold -= g.cost; gameState.towers.push(new Tower(c, r, gameState.selectedTowerType));
-                    soundManager.playBuild(); updateStatsUI();
-                }
-            } else deselectAll();
-        }
-        canvas.addEventListener('mousedown', handleIn);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleIn(e); }, {passive:false});
-        canvas.addEventListener('mousemove', (e) => { const p=getPos(e); gameState.mouseX=p.x; gameState.mouseY=p.y; });
+        // Global Audio Resume on any click
+        document.addEventListener('click', function() {
+            if (window.soundManager && window.soundManager.ctx && window.soundManager.ctx.state === 'suspended') {
+                window.soundManager.ctx.resume();
+            }
+        }, {once:true});
 
-        function gameLoop() { update(); draw(); if(!gameState.gameOver) requestAnimationFrame(gameLoop); }
-        draw();
     </script>
 </body>
 </html>
