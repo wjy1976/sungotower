@@ -1,9 +1,9 @@
-﻿!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三國の演義：無限戰役</title>
+    <title>三國の演義：無限戰役 </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
@@ -76,20 +76,6 @@
         .mode-title { font-size: 22px; color: #ffb74d; margin-bottom: 5px; font-weight: bold; }
         .mode-desc { font-size: 14px; color: #ccc; }
 
-        /* Upgrade Screen */
-        .upgrade-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px;
-        }
-        .upgrade-card {
-            background: rgba(62, 39, 35, 0.9); border: 2px solid #8d6e63;
-            padding: 20px; border-radius: 10px; cursor: pointer; transition: 0.2s;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .upgrade-card:hover { border-color: #ffd700; background: rgba(93, 64, 55, 0.9); }
-        .upgrade-icon { font-size: 40px; margin-bottom: 10px; }
-        .upgrade-name { font-size: 20px; color: #ffb74d; font-weight: bold; }
-        .upgrade-cost { color: #81c784; font-size: 14px; margin-top: 5px; }
-
         /* Lobby UI */
         .lobby-panel {
             background: rgba(62, 39, 35, 0.95); padding: 20px; border-radius: 8px;
@@ -121,6 +107,7 @@
             background: rgba(0,0,0,0.6); position: relative; overflow: hidden;
         }
         
+        /* Hover Effects */
         .faction-shu:hover { border-color: var(--shu-color); transform: scale(1.1); box-shadow: 0 0 25px var(--shu-color); background: rgba(46, 125, 50, 0.3); }
         .faction-wei:hover { border-color: var(--wei-color); transform: scale(1.1); box-shadow: 0 0 25px var(--wei-color); background: rgba(21, 101, 192, 0.3); }
         .faction-wu:hover { border-color: var(--wu-color); transform: scale(1.1); box-shadow: 0 0 25px var(--wu-color); background: rgba(198, 40, 40, 0.3); }
@@ -215,11 +202,11 @@
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
                 <div class="mode-card" onclick="window.App.selectMode('single')">
                     <div class="mode-title">🏹 演義模式 (單人)</div>
-                    <div class="mode-desc">挑戰無限波次，每10波可升級科技。</div>
+                    <div class="mode-desc">挑戰無限波次，守衛城池，解鎖武將。</div>
                 </div>
                 <div class="mode-card" onclick="window.App.selectMode('multi')">
                     <div class="mode-title">⚔️ 對戰模式 (多人)</div>
-                    <div class="mode-desc">線上 1v1，即時自動出兵與手動派兵。</div>
+                    <div class="mode-desc">線上 1v1，佈署防禦同時派兵進攻對手。</div>
                 </div>
             </div>
             <button class="btn-large" style="padding: 10px 30px; font-size: 18px; margin-top: 30px; background: #5d4037;" onclick="window.App.backToSplash()">返回</button>
@@ -263,41 +250,7 @@
             <button class="btn-large" style="margin-top:30px; padding: 10px 30px; font-size: 16px; background: #5d4037;" onclick="window.App.showModeSelect()">返回</button>
         </div>
 
-        <!-- 5. Tech Upgrade Screen (Single Player) -->
-        <div id="upgrade-screen" class="screen hidden">
-            <h2 style="color: #ffb74d; margin-bottom: 20px;">戰備升級</h2>
-            <div style="color: #ccc; margin-bottom: 20px;">使用庫銀升級軍備，迎接下一階段的挑戰！</div>
-            <div class="upgrade-grid">
-                <div class="upgrade-card" onclick="window.SingleGame.buyTech('bow')">
-                    <div class="upgrade-icon">🏹</div>
-                    <div class="upgrade-name">強弓</div>
-                    <div style="font-size:12px; color:#aaa;">增加所有武將射程</div>
-                    <div id="cost-bow" class="upgrade-cost">💰200</div>
-                </div>
-                <div class="upgrade-card" onclick="window.SingleGame.buyTech('arrow')">
-                    <div class="upgrade-icon">🗡️</div>
-                    <div class="upgrade-name">銳箭</div>
-                    <div style="font-size:12px; color:#aaa;">增加遠程武將攻擊</div>
-                    <div id="cost-arrow" class="upgrade-cost">💰200</div>
-                </div>
-                <div class="upgrade-card" onclick="window.SingleGame.buyTech('spear')">
-                    <div class="upgrade-icon">🔱</div>
-                    <div class="upgrade-name">長槍</div>
-                    <div style="font-size:12px; color:#aaa;">增加近戰武將攻擊</div>
-                    <div id="cost-spear" class="upgrade-cost">💰200</div>
-                </div>
-                <div class="upgrade-card" onclick="window.SingleGame.buyTech('sword')">
-                    <div class="upgrade-icon">⚔️</div>
-                    <div class="upgrade-name">鋼刀</div>
-                    <div style="font-size:12px; color:#aaa;">增加近戰武將攻速</div>
-                    <div id="cost-sword" class="upgrade-cost">💰200</div>
-                </div>
-            </div>
-            <div style="margin-top:20px; font-size: 18px;">剩餘庫銀: <span id="upgrade-gold" style="color:#ffd700">0</span></div>
-            <button class="btn-large" style="margin-top:30px;" onclick="window.SingleGame.finishUpgrade()">完成升級，進入下一關</button>
-        </div>
-
-        <!-- 6. Waiting Screen (Multiplayer) -->
+        <!-- 5. Waiting Screen (Multiplayer) -->
         <div id="waiting-screen" class="screen hidden">
             <div style="font-size: 40px; margin-bottom: 20px;">⏳</div>
             <h2>等待對手加入...</h2>
@@ -305,7 +258,7 @@
             <button class="btn-large" style="margin-top:20px; background:#5d4037; font-size:14px; padding:10px 20px;" onclick="location.reload()">取消並返回</button>
         </div>
 
-        <!-- 7. Game Over Screen -->
+        <!-- 6. Game Over Screen -->
         <div id="end-screen" class="screen hidden">
             <h2 id="end-title">戰役結束</h2>
             <p id="end-desc"></p>
@@ -361,8 +314,7 @@
                 <div id="offense-panel" class="hidden">
                     <div id="unit-grid" class="tower-grid"></div>
                     <div style="font-size: 11px; color: #aaa; padding: 10px; text-align: center;">
-                        花費金幣派遣部隊進攻敵方城池。<br>每擊殺敵軍或敵軍到達對方基地皆可獲利。<br>
-                        <span style="color:#ffb74d;">此外，城堡會自動定期派出士兵。</span>
+                        花費金幣派遣部隊進攻敵方城池。<br>每擊殺敵軍或敵軍到達對方基地皆可獲利。
                     </div>
                 </div>
             </div>
@@ -379,38 +331,17 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- 使用者請在此填入您的 Firebase 設定 (若要在本地運行多人模式) ---
-        const manualFirebaseConfig = {
-            apiKey: "AIzaSyCI4Y5rv0qMTpB9h-wOi01D1A1k5cTlWWM",
-            authDomain: "sangotd-e7dd8.firebaseapp.com",
-            projectId: "sangotd-e7dd8",
-            storageBucket: "sangotd-e7dd8.firebasestorage.app",
-            messagingSenderId: "765117504953",
-            appId: "1:765117504953:web:1fadbe30ccb126438daa68"
-        };
-
-        // 自動判斷使用環境變數還是手動設定
-        let firebaseConfig;
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-        } else if (manualFirebaseConfig.apiKey !== "") {
-            firebaseConfig = manualFirebaseConfig;
-        } else {
-            console.warn("未偵測到 Firebase 設定，多人模式將無法使用。");
-            firebaseConfig = {}; // 空物件，避免報錯
-        }
-
-        const app = Object.keys(firebaseConfig).length > 0 ? initializeApp(firebaseConfig) : null;
-        const auth = app ? getAuth(app) : null;
-        const db = app ? getFirestore(app) : null;
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
 
         // Make Firebase accessible globally for the Game Logic
-        window.FB = { db, auth, appId, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment, firebaseConfig };
+        window.FB = { db, auth, appId, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment };
         
         // Auth Init
         const initAuth = async () => {
-            if (!auth) return;
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
             } else {
@@ -418,15 +349,13 @@
             }
         };
         initAuth();
-        if (auth) {
-            onAuthStateChanged(auth, (user) => {
-                if(user) {
-                    window.currentUser = user;
-                    console.log("Logged in as", user.uid);
-                    if(window.Lobby) window.Lobby.init(); // Start listening for rooms
-                }
-            });
-        }
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                window.currentUser = user;
+                console.log("Logged in as", user.uid);
+                if(window.Lobby) window.Lobby.init(); // Start listening for rooms
+            }
+        });
     </script>
 
     <script>
@@ -718,12 +647,11 @@
             start: function(faction) {
                 this.state = {
                     faction: FACTIONS[faction],
-                    gold: 300, lives: 20, wave: 0, stage: 1,
+                    gold: 150, lives: 20, wave: 0,
                     towers: [], enemies: [], projectiles: [],
                     active: false, spawning: false, gameOver: false,
                     path: [], decorations: [], spawnTimer: 0, spawnQueue: [],
-                    selectedType: null, selectedTower: null,
-                    techs: { bow: 0, arrow: 0, spear: 0, sword: 0 } // Tech levels
+                    selectedType: null, selectedTower: null
                 };
                 
                 document.getElementById('ui-sidebar').classList.remove('hidden');
@@ -732,8 +660,6 @@
                 document.getElementById('offense-panel').classList.add('hidden');
                 document.getElementById('start-btn').classList.remove('hidden');
                 document.getElementById('pvp-tabs').classList.add('hidden');
-                document.getElementById('upgrade-screen').classList.add('hidden');
-                
                 document.getElementById('stat-1-lbl').textContent = "波次";
                 document.getElementById('stat-2-lbl').textContent = "耐久";
                 document.getElementById('faction-label').textContent = this.state.faction.name;
@@ -746,37 +672,18 @@
             },
             generateMap: function() {
                 window.soundManager.selectRandomTrack();
-                const diff = this.state.stage; // Path complexity based on stage
-                
-                let path = [];
-                // Simple random walker for path generation
-                // Start
-                let cur = {x: 0, y: Math.floor(Math.random()*(ROWS-4))+2};
-                path.push({...cur});
-                
-                // End Target
+                let path = [{x:0, y: Math.floor(Math.random()*(ROWS-4))+2}];
+                let cur = {...path[0]};
+                const mid = Math.floor(COLS/2);
                 const endY = Math.floor(Math.random()*(ROWS-4))+2;
                 
-                // Intermediate points
-                // Increase complexity: more zig-zags
-                let colStep = Math.max(2, Math.floor(COLS / (3 + diff))); // Columns per segment
-                
-                for(let cx = colStep; cx < COLS; cx += colStep) {
-                    let nextY = Math.floor(Math.random()*(ROWS-4))+2;
-                    // Move X
-                    while(cur.x < cx && cur.x < COLS-1) { cur.x++; path.push({...cur}); }
-                    // Move Y
-                    while(cur.y !== nextY) { cur.y += (cur.y < nextY ? 1 : -1); path.push({...cur}); }
-                }
-                
-                // Final stretch
-                while(cur.x < COLS-1) { cur.x++; path.push({...cur}); }
+                while(cur.x < mid) { cur.x++; path.push({...cur}); }
                 while(cur.y !== endY) { cur.y += (cur.y < endY ? 1 : -1); path.push({...cur}); }
+                while(cur.x < COLS-1) { cur.x++; path.push({...cur}); }
                 
                 this.state.path = path.map(p => ({x: p.x*GRID_SIZE+20, y: p.y*GRID_SIZE+20}));
                 this.state.gridPath = new Set(path.map(p => `${p.x},${p.y}`));
 
-                // Decor
                 const decorations = [];
                 const decorTypes = ['🌲','🌿','🪨','⛰️'];
                 for(let c=0; c<COLS; c++) {
@@ -795,56 +702,20 @@
                 let count = 5 + this.state.wave*2;
                 this.state.spawnQueue = [];
                 for(let i=0; i<count; i++) this.state.spawnQueue.push(Math.random()>0.8?'scout':'soldier');
-                if(this.state.wave % 10 === 0) this.state.spawnQueue.push('boss'); // Boss every 10
+                if(this.state.wave % 10 === 0) this.state.spawnQueue.push('boss');
                 this.state.spawnTimer = 0;
                 this.updateUI();
             },
-            checkLevelUp: function() {
-                if(this.state.wave > 0 && this.state.wave % 10 === 0) {
-                    this.state.active = false; // Stop game loop for upgrade
-                    this.showUpgradeMenu();
-                } else {
-                    this.state.active = false;
-                    this.updateUI();
-                }
-            },
-            showUpgradeMenu: function() {
-                document.getElementById('game-canvas').classList.add('hidden');
-                document.getElementById('ui-sidebar').classList.add('hidden');
-                document.getElementById('upgrade-screen').classList.remove('hidden');
-                this.updateUpgradeUI();
-            },
-            updateUpgradeUI: function() {
-                document.getElementById('upgrade-gold').textContent = this.state.gold;
-                // Update costs logic (flat 200 for now)
-            },
-            buyTech: function(type) {
-                const cost = 200;
-                if(this.state.gold >= cost) {
-                    this.state.gold -= cost;
-                    this.state.techs[type]++;
-                    this.updateUpgradeUI();
-                    window.soundManager.playBuild();
-                    window.App.toast("升級成功！");
-                } else {
-                    window.App.toast("庫銀不足");
-                }
-            },
-            finishUpgrade: function() {
-                this.state.stage++;
-                this.generateMap(); // New map
-                this.state.towers = []; // Reset towers? User said "next level", implies new setup or keeping?
-                // Usually "Stage" implies reset or continuation. Let's keep towers for "Tower Defense" feel or reset?
-                // The prompt "enter next level" usually means new map. Let's reset towers but give money back?
-                // Or just keep tech. Let's reset map and towers but KEEP TECH and GOLD.
+            nextLevel: function() {
+                window.App.toast(`第 ${this.state.wave} 波攻勢瓦解！全軍遷徙！`);
                 // Refund towers
-                // Actually, let's just generate new map and clear towers.
-                
-                document.getElementById('upgrade-screen').classList.add('hidden');
-                document.getElementById('game-canvas').classList.remove('hidden');
-                document.getElementById('ui-sidebar').classList.remove('hidden');
-                this.updateUI();
-                window.App.toast(`進入第 ${this.state.stage} 關！`);
+                this.state.towers.forEach(t => {
+                    this.state.gold += t.totalCost;
+                });
+                this.state.towers = [];
+                this.state.projectiles = [];
+                this.generateMap();
+                window.soundManager.playWin(); // Fanfare
             },
             selectTower: function(idx) {
                 this.state.selectedType = idx; this.state.selectedTower = null;
@@ -899,26 +770,10 @@
                     const g = this.state.faction.generals[obj];
                     const arch = ARCHETYPES[g.base];
                     const stats = {...arch, ...(g.stats||{})};
-                    
-                    // Apply Tech Preview
-                    let dmg = stats.damage;
-                    let rng = stats.range;
-                    let cd = stats.cooldown;
-                    
-                    if(this.state.techs.bow > 0) rng *= (1 + 0.1 * this.state.techs.bow);
-                    
-                    if (['archer', 'magic'].includes(g.base) && this.state.techs.arrow > 0) {
-                        dmg *= (1 + 0.15 * this.state.techs.arrow);
-                    }
-                    if (['fast', 'heavy', 'line', 'splash'].includes(g.base)) {
-                        if (this.state.techs.spear > 0) dmg *= (1 + 0.15 * this.state.techs.spear);
-                        if (this.state.techs.sword > 0) cd /= (1 + 0.1 * this.state.techs.sword);
-                    }
-
-                    const atkSpd = (60 / cd).toFixed(1);
+                    const atkSpd = (60 / stats.cooldown).toFixed(1);
 
                     p.innerHTML = `<div style="color:#ffb74d;font-weight:bold;border-bottom:1px solid #555;padding-bottom:5px;">${g.icon} ${g.name}</div>
-                    <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;"><span>⚔️ 攻擊: ${Math.floor(dmg)}</span><span>🎯 射程: ${Math.floor(rng)}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;"><span>⚔️ 攻擊: ${stats.damage}</span><span>🎯 射程: ${stats.range}</span></div>
                     <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:11px;"><span>⚡ 攻速: ${atkSpd}/秒</span></div>
                     <div style="font-size:10px;margin-top:5px;color:#aaa;">${arch.desc}</div>`;
                     document.getElementById('action-area').classList.add('hidden');
@@ -949,7 +804,7 @@
                 });
             },
             loop: function() {
-                if(gameMode !== 'single' || this.state.gameOver || !document.getElementById('upgrade-screen').classList.contains('hidden')) return;
+                if(gameMode !== 'single' || this.state.gameOver) return;
                 
                 if(this.state.spawning) {
                     this.state.spawnTimer++;
@@ -962,12 +817,16 @@
                 
                 this.state.enemies.forEach(e => e.update());
                 this.state.enemies = this.state.enemies.filter(e => e.hp > 0 && !e.finished);
-                
-                // End of Wave Check
                 if(this.state.active && !this.state.spawning && this.state.enemies.length === 0) {
-                    this.state.gold += 50 + this.state.wave*20; // Bonus gold
+                    this.state.active = false;
+                    this.state.gold += 50 + this.state.wave*10;
                     window.soundManager.playWin();
-                    this.checkLevelUp();
+                    
+                    // Check for Level Change (every 10 waves)
+                    if (this.state.wave % 10 === 0) {
+                        this.nextLevel();
+                    }
+                    this.updateUI();
                 }
 
                 this.state.towers.forEach(t => t.update(this.state.enemies, this.state.projectiles));
@@ -994,14 +853,11 @@
 
                 if(this.state.selectedType !== null) {
                     const g = this.state.faction.generals[this.state.selectedType];
+                    const base = ARCHETYPES[g.base];
+                    const stats = {...base, ...(g.stats||{})};
+                    const range = stats.range;
                     const cx = Math.floor(mousePos.x/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
                     const cy = Math.floor(mousePos.y/GRID_SIZE)*GRID_SIZE + GRID_SIZE/2;
-
-                    // Tech applied range calc
-                    const base = ARCHETYPES[g.base];
-                    let range = base.range;
-                    if(g.stats && g.stats.range) range = g.stats.range;
-                    if(this.state.techs.bow > 0) range *= (1 + 0.1 * this.state.techs.bow);
 
                     ctx.beginPath(); 
                     ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth=2;
@@ -1056,8 +912,6 @@
                     myFactionData: myF,
                     active: true,
                     incomeTimer: 0,
-                    autoSpawnTimer: 0, // NEW: Auto spawn timer
-                    gameTime: 0,
                     selectedType: null,
                     lastUnitCount: 0 
                 };
@@ -1220,26 +1074,6 @@
                 this.state.incomeTimer++;
                 if(this.state.incomeTimer > 60) { this.state.gold += 5; this.state.incomeTimer = 0; this.updateUI(); }
                 
-                // Auto Spawn Logic (8s = 480 frames approx at 60fps)
-                this.state.autoSpawnTimer++;
-                this.state.gameTime++;
-                if(this.state.autoSpawnTimer > 480) {
-                    this.state.autoSpawnTimer = 0;
-                    // Spawn amount based on game time (increases every minute)
-                    const amount = 1 + Math.floor(this.state.gameTime / 3600); 
-                    for(let k=0; k<amount; k++) {
-                        // Spawn for ME
-                        this.spawnUnit('soldier', true);
-                        // Spawn for ENEMY (visual only, logic handled by their client mirroring this)
-                        // Actually, since we don't sync auto-spawns, both clients run this same logic.
-                        // So I spawn mine (true) and theirs (false) locally.
-                        // Wait, if I spawn theirs locally, does it duplicate? 
-                        // No, `sync` only syncs `guestUnits` (manual queue). Auto spawns are local logic.
-                        // Perfect.
-                        this.spawnUnit('soldier', false);
-                    }
-                }
-
                 [...this.state.myUnits, ...this.state.enemyUnits].forEach(u => {
                     const reach = u.updatePVP(this.state.map.path);
                     if(reach) {
@@ -1339,28 +1173,14 @@
                 this.finished = false; this.isMine = isMine;
                 
                 if (type !== 'pvp_unit') {
-                    // Adjusted Difficulty: More Fun, Less Grind
-                    // Slower scaling to match general stats
-                    let mult = 1.0 + (wave * 0.05); // Reduced linear growth
-                    mult *= Math.pow(1.03, wave);   // Reduced exponential growth (was 1.08)
-                    
-                    if (wave <= 5) mult *= 0.4;     // Easy start
-                    else if (wave <= 10) mult *= 0.7; // Mid transition
-                    
-                    // Reduced base HP to ensure killability
-                    this.baseHp = type==='boss'? 700 : type==='soldier'? 35 : 18;
+                    let mult = Math.pow(1.3, wave);
+                    if (wave <= 5) mult *= 0.4; // Beginner friendly: 40% HP for first 5 waves
+                    this.baseHp = type==='boss'?900:type==='soldier'?45:20;
                     this.maxHp = Math.floor(this.baseHp * mult);
-                    
-                    // Cap minimum HP to 1 to avoid bugs
-                    this.maxHp = Math.max(5, this.maxHp);
-                    
                     this.hp = this.maxHp;
-                    // Slightly slower scouts to prevent cheap leaks
-                    this.speed = type==='boss'?0.5 : type==='scout'?2.2 : 1.3;
-                    
+                    this.speed = type==='boss'?0.6:type==='scout'?2.8:1.5;
                     this.icon = type==='boss'?'\u{1F479}':type==='scout'?'\u{1F406}':'\u{1F482}';
-                    // Increased rewards to fuel economy
-                    this.reward = type==='boss'?500 : 20;
+                    this.reward = type==='boss'?350:15;
                     this.mode = 'single';
                 }
                 this.froz = 0; this.burn = 0; this.slowF = 1;
@@ -1472,25 +1292,7 @@
                 
                 const base = ARCHETYPES[g.base];
                 const stats = {...base, ...(g.stats||{})};
-                
-                // Single Player Tech Bonus Application (at construction time)
-                let dmg = stats.damage;
-                let rng = stats.range;
-                let cd = stats.cooldown;
-                
-                if (window.SingleGame && window.SingleGame.state.techs) {
-                    const techs = window.SingleGame.state.techs;
-                    if (techs.bow > 0) rng *= (1 + 0.1 * techs.bow);
-                    if (['archer', 'magic'].includes(g.base) && techs.arrow > 0) dmg *= (1 + 0.15 * techs.arrow);
-                    if (['fast', 'heavy', 'line', 'splash'].includes(g.base)) {
-                        if (techs.spear > 0) dmg *= (1 + 0.15 * techs.spear);
-                        if (techs.sword > 0) cd /= (1 + 0.1 * techs.sword);
-                    }
-                }
-
-                this.dmg = Math.floor(dmg); 
-                this.rng = Math.floor(rng); 
-                this.cdM = Math.floor(cd);
+                this.dmg=stats.damage; this.rng=stats.range; this.cdM=stats.cooldown;
                 this.type=stats.type; this.eff=g.effect||stats.effect; 
                 this.cd=0;
             }
@@ -1565,12 +1367,6 @@
                 });
             },
             createRoom: async () => {
-                // Check if Firebase config is missing (local environment)
-                if(!window.FB || !window.FB.firebaseConfig || Object.keys(window.FB.firebaseConfig).length === 0) {
-                    alert("多人連線功能需要後端伺服器支援。\n本地環境或複製的檔案無法連接資料庫，因此無法創建房間。\n請在支援的線上環境遊玩。");
-                    return;
-                }
-
                 if(!window.FB) return;
                 const name = document.getElementById('room-name-input').value.trim() || `Battle ${Math.floor(Math.random()*100)}`;
                 document.getElementById('lobby-screen').classList.add('hidden');
