@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>三國の演義：無盡的戰役 </title>
+    <title>三國の演義：無限戰役 </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
@@ -306,21 +306,21 @@
                     <div class="tech-icon">⚔️</div>
                     <div class="tech-name">兵器改良</div>
                     <div class="tech-desc" style="font-size:11px; color:#ccc;">基礎攻擊力 +10%</div>
-                    <div class="tech-cost" id="cost-dmg">💰800</div>
+                    <div class="tech-cost" id="cost-dmg">💰1000</div>
                     <div class="tech-lvl" id="lvl-dmg">Lv.0</div>
                 </div>
                 <div class="tech-card" onclick="window.SingleGame.buyTech('spd')">
                     <div class="tech-icon">⚡</div>
                     <div class="tech-name">輕裝急行</div>
                     <div class="tech-desc" style="font-size:11px; color:#ccc;">攻擊速度 +10%</div>
-                    <div class="tech-cost" id="cost-spd">💰800</div>
+                    <div class="tech-cost" id="cost-spd">💰1000</div>
                     <div class="tech-lvl" id="lvl-spd">Lv.0</div>
                 </div>
                 <div class="tech-card" onclick="window.SingleGame.buyTech('rng')">
                     <div class="tech-icon">🔭</div>
                     <div class="tech-name">鷹眼訓練</div>
                     <div class="tech-desc" style="font-size:11px; color:#ccc;">攻擊範圍 +10%</div>
-                    <div class="tech-cost" id="cost-rng">💰800</div>
+                    <div class="tech-cost" id="cost-rng">💰1000</div>
                     <div class="tech-lvl" id="lvl-rng">Lv.0</div>
                 </div>
             </div>
@@ -414,7 +414,29 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // 使用您提供的設定作為預設值
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyCI4Y5rv0qMTpB9h-wOi01D1A1k5cTlWWM",
+            authDomain: "sangotd-e7dd8.firebaseapp.com",
+            projectId: "sangotd-e7dd8",
+            storageBucket: "sangotd-e7dd8.firebasestorage.app",
+            messagingSenderId: "765117504953",
+            appId: "1:765117504953:web:1fadbe30ccb126438daa68"
+        };
+
+        // 優先使用環境變數(如果有的話)，否則使用您的設定
+        let firebaseConfig;
+        try {
+            firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) 
+                ? JSON.parse(__firebase_config) 
+                : defaultFirebaseConfig;
+        } catch (e) {
+            firebaseConfig = defaultFirebaseConfig;
+        }
+
+        // Check if config is valid-ish
+        const isConfigValid = firebaseConfig && Object.keys(firebaseConfig).length > 0;
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -423,8 +445,25 @@
         // Make Firebase accessible globally for the Game Logic
         window.FB = { db, auth, appId, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, increment, addDoc };
         
+        // Timeout logic to allow offline play
+        const authTimeout = setTimeout(() => {
+            const btn = document.getElementById('enter-game-btn');
+            if(btn && btn.disabled) {
+                btn.textContent = "進入遊戲 (離線模式)";
+                btn.disabled = false;
+                btn.onclick = () => {
+                    window.App.initAudioAndEnter();
+                    window.App.toast("目前為離線模式，無法使用多人對戰");
+                };
+            }
+        }, 3000); // 3 seconds timeout
+
         // Auth Init
         const initAuth = async () => {
+            if (!isConfigValid) {
+                console.warn("No Firebase config found. Running in offline mode.");
+                return; // Timeout will handle the UI
+            }
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -433,7 +472,7 @@
                 }
             } catch (e) {
                 console.error("Auth Failed:", e);
-                alert("伺服器連線失敗，請重新整理頁面。");
+                // alert("伺服器連線失敗，請重新整理頁面。"); // Let the timeout handle fallback
             }
         };
         initAuth();
